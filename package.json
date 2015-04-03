@@ -1,0 +1,34 @@
+{
+  "name": "famous-seed",
+  "version": "0.1.0",
+  "description": "seed for a browserified version of famous",
+  "browser": "src/worker.js",
+  "scripts": {
+    "build-main": "browserify src/main.js -t [ babelify --playground --experimental ] | uglifyjs > public/main.bundle.js",
+    "watch-main": "watchify src/main.js -o public/main.bundle.js -d -v -t [ babelify --playground --experimental ]",
+    "start": "npm run build && serve public/ -p 1337",
+    "start-dev": "npm run watch & serve public/ -p 1337",
+    "test": "npm run lint -s && npm run build",
+    "build": "npm run build-main",
+    "watch": "npm run watch-main",
+    "lint-eslint": "eslint src/",
+    "lint-jscs": "jscs src/",
+    "lint": "npm run lint-eslint && npm run lint-jscs"
+  },
+  "devDependencies": {
+    "babelify": "^5.0.3",
+    "browser-sync": "^2.0.0-rc10",
+    "browserify": "^8.0.3",
+    "eslint": "^0.12.0",
+    "jscs": "^1.7.3",
+    "serve": "^1.4.0",
+    "uglify-js": "^2.4.15",
+    "watchify": "^2.1.0"
+  },
+  "author": "Famous",
+  "license": "All rights reserved",
+  "dependencies": {
+    "brfs": "^1.1.1",
+    "famous": "git+ssh://git@github.famo.us/platform/oasis#v0.1.0"
+  }
+}
