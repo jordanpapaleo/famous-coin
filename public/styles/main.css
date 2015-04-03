@@ -7,3 +7,8 @@ body {
     -ms-user-select: none;
     user-select: none;
 }
+
+/*20 blue dots*/
+.blue-dot {
+    background: radial-gradient(ellipse at center, rgba(22,139,221,.8) 0%, rgba(32,139,221,.8) 13%, rgba(22,170,238,.8) 22%, rgba(20,150,250,0.41) 33%, rgba(10,200,250,0.3) 40%, rgba(0,200,250,0.15) 50%, rgba(0, 200,250,0) 63%, rgba(0,200,250,0) 100%);
+}
