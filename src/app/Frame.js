@@ -2,8 +2,8 @@ import {core, domRenderables, components, transitions} from 'famous';
 import Utils from '../utils/Utilities'
 import {View} from '../shared/View';
 import {Hand} from './Hand';
-import {TopText} from './TopText';
 import {Card} from './Card';
+import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 import {Timeline} from '../shared/Timeline';
 
 const Easing         = transitions.Easing;
@@ -31,6 +31,11 @@ export class Frame extends View {
         this.renderTopText();
         this.renderCards();
         this.renderHand();
+        this.renderTagLine();
+        //this.renderCircles();
+        this.renderCoin();
+        this.renderGetYours();
+        this.renderPreOrder();
 
         //this.renderOverlay();
         this.initTimeline();
@@ -93,6 +98,42 @@ export class Frame extends View {
         });
     }
 
+    renderTagLine() {
+        this.tagLine = new TagLine({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderCircles() {
+        /*this.tagLine = new TagLine({
+            node: this.node.addChild(),
+            model: {}
+        });*/
+    }
+
+    renderCoin() {
+        this.coin = new Coin({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderGetYours() {
+        this.getYours = new GetYours({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderPreOrder() {
+        this.preOrder = new PreOrder({
+            tag: "button",
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
     setEvents() {
         const _this = this;
         new GestureHandler(this.dispatch, [{
@@ -112,12 +153,13 @@ export class Frame extends View {
             start: 0,
             step1: 1500,
             step2: 2500,
-            step3: 3500, //First stage Done
-            step4: 4500,
-            step5: 5500,
+            step3: 3500, //Stage one done
+            step4: 4500, //
+            step5: 5500, //
             step6: 5750,
             step7: 6000,
-            end:   6500
+            step8: 6500, //Stage two done
+            end:   7000
         };
         this.currentTime = 0; //Used in timeline scrubbing
 
@@ -162,6 +204,52 @@ export class Frame extends View {
             ]
         });
 
+        /*--------------------- TAG LINE ---------------------*/
+        this.timeline.registerComponent({
+            component: this.tagLine.position,
+            path: [
+                [this.time.start, [0, this.tagLine.position.getY()]],
+                [this.time.step4, [0, this.tagLine.position.getY()]],
+                [this.time.step6, [0, 50]], // The element is 100px tall, this puts it out of view
+                [this.time.step7, [0, 40]],
+                [this.time.step8, [0, -110]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- COIN ---------------------*/
+        this.timeline.registerComponent({
+            component: this.coin.position,
+            path: [
+                [this.time.start, [0, this.coin.position.getY()]],
+                [this.time.step7, [0, this.coin.position.getY()]],
+                [this.time.step8, [0, 375]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- GET YOURS ---------------------*/
+        this.timeline.registerComponent({
+            component: this.getYours.position,
+            path: [
+                [this.time.start, [0, this.getYours.position.getY()]],
+                [this.time.step7, [0, this.getYours.position.getY()]],
+                [this.time.step8, [0, 430]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- PRE ORDER ---------------------*/
+        this.timeline.registerComponent({
+            component: this.preOrder.position,
+            path: [
+                [this.time.start, [0, this.preOrder.position.getY()]],
+                [this.time.step7, [0, this.preOrder.position.getY()]],
+                [this.time.step8, [0, 500]],
+                LINEAR
+            ]
+        });
+
         this.timeline.registerComponent({
             component: this.hand.opacity,
             path: [
@@ -197,7 +285,7 @@ export class Frame extends View {
         });
 
         setTimeout(function() {
-            _this.timeline.set(_this.time.end, { duration: _this.time.end });
+            //_this.timeline.set(_this.time.end, { duration: _this.time.end });
         }, 500);
     }
 
@@ -294,7 +382,6 @@ export class Frame extends View {
                     [this.time.step4, [.62, .62, .62]],
                     [this.time.step5, [.75, .75, .75]]
                 ];
-
                 timeSegments.cardRotation = [
                     [0, currentRotation],
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
@@ -305,22 +392,21 @@ export class Frame extends View {
                     [this.time.step6, [(15 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step7, [(0 * Math.PI / 180), 0, (90 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [0, 0],
                     [(this.time.step1 - 1), 0],
                     [this.time.step1, 1]
                 ];
-
                 timeSegments.cardPosition = [
                     [this.time.start, currentPosition],
                     [(this.time.step1 / 2), [0, 250]],
                     [this.time.step1, [0, 75]],
                     [this.time.step3, [0, 75]],
                     [this.time.step4, [0, 300]],
-                    [this.time.step5, [0, 200]]
+                    [this.time.step5, [0, 200]],
+                    [this.time.step7, [0, 200]],
+                    [this.time.step8, [0, 50]]
                 ];
-
                 break;
         }
 
