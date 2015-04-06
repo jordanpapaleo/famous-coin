@@ -2,14 +2,18 @@ import {core, domRenderables, components, transitions} from 'famous';
 import Utils from '../utils/Utilities'
 import {View} from '../shared/View';
 import {Hand} from './Hand';
-import {TopText} from './TopText';
 import {Card} from './Card';
+import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 import {Timeline} from '../shared/Timeline';
 
 const Easing         = transitions.Easing;
 const GestureHandler = components.GestureHandler;
 
 export class Frame extends View {
+    pre() {
+        this.timeline = new Timeline({ timescale: 1 });
+    }
+
     setProperties() {
         this.size.setAbsolute(320, 568);
         this.mountPoint.set(.5, .5);
@@ -23,12 +27,33 @@ export class Frame extends View {
         };
         Utils.setStyle(this, frameStyles);
 
+        this.renderBlueScreen();
         this.renderTopText();
         this.renderCards();
         this.renderHand();
+        this.renderTagLine();
+        //this.renderCircles();
+        this.renderCoin();
+        this.renderGetYours();
+        this.renderPreOrder();
 
         //this.renderOverlay();
         this.initTimeline();
+    }
+
+    renderBlueScreen() {
+        this.blueScreen = new View({
+            node: this.node.addChild(),
+            mode: {}
+        });
+
+        let blueStyles = {
+            'background-color': 'rgb(22, 139, 221)'
+        };
+
+        Utils.setStyle(this.blueScreen, blueStyles);
+
+        this.blueScreen.align.set(0, 1, 0);
     }
 
     renderTopText() {
@@ -73,6 +98,42 @@ export class Frame extends View {
         });
     }
 
+    renderTagLine() {
+        this.tagLine = new TagLine({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderCircles() {
+        /*this.tagLine = new TagLine({
+            node: this.node.addChild(),
+            model: {}
+        });*/
+    }
+
+    renderCoin() {
+        this.coin = new Coin({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderGetYours() {
+        this.getYours = new GetYours({
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
+    renderPreOrder() {
+        this.preOrder = new PreOrder({
+            tag: "button",
+            node: this.node.addChild(),
+            model: {}
+        });
+    }
+
     setEvents() {
         const _this = this;
         new GestureHandler(this.dispatch, [{
@@ -88,14 +149,30 @@ export class Frame extends View {
         const LINEAR = Easing.getCurve('linear');
         const _this = this;
 
-        this.timeline = new Timeline({ timescale: 1 });
         this.time = {
             start: 0,
             step1: 1500,
             step2: 2500,
-            end: 3500
+            step3: 3500, //Stage one done
+            step4: 4500, //
+            step5: 5500, //
+            step6: 5750,
+            step7: 6000,
+            step8: 6500, //Stage two done
+            end:   7000
         };
         this.currentTime = 0; //Used in timeline scrubbing
+
+        /*--------------------- BLUE SCREEN ---------------------*/
+        this.timeline.registerComponent({
+            component: this.blueScreen.align,
+            path: [
+                [this.time.start, [0, 1, 0]],
+                [this.time.step3, [0, 1, 0]],
+                [this.time.step5, [0, 0, 0]],
+                LINEAR
+            ]
+        });
 
         /*--------------------- TOP TEXT ---------------------*/
         this.timeline.registerComponent({
@@ -123,6 +200,52 @@ export class Frame extends View {
             path: [
                 [this.time.start, [0, this.hand.position.getY()]],
                 [this.time.step1, [0, -75]], // The element is 75px tall, this puts it out of view
+                LINEAR
+            ]
+        });
+
+        /*--------------------- TAG LINE ---------------------*/
+        this.timeline.registerComponent({
+            component: this.tagLine.position,
+            path: [
+                [this.time.start, [0, this.tagLine.position.getY()]],
+                [this.time.step4, [0, this.tagLine.position.getY()]],
+                [this.time.step6, [0, 50]], // The element is 100px tall, this puts it out of view
+                [this.time.step7, [0, 40]],
+                [this.time.step8, [0, -110]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- COIN ---------------------*/
+        this.timeline.registerComponent({
+            component: this.coin.position,
+            path: [
+                [this.time.start, [0, this.coin.position.getY()]],
+                [this.time.step7, [0, this.coin.position.getY()]],
+                [this.time.step8, [0, 375]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- GET YOURS ---------------------*/
+        this.timeline.registerComponent({
+            component: this.getYours.position,
+            path: [
+                [this.time.start, [0, this.getYours.position.getY()]],
+                [this.time.step7, [0, this.getYours.position.getY()]],
+                [this.time.step8, [0, 430]],
+                LINEAR
+            ]
+        });
+
+        /*--------------------- PRE ORDER ---------------------*/
+        this.timeline.registerComponent({
+            component: this.preOrder.position,
+            path: [
+                [this.time.start, [0, this.preOrder.position.getY()]],
+                [this.time.step7, [0, this.preOrder.position.getY()]],
+                [this.time.step8, [0, 500]],
                 LINEAR
             ]
         });
@@ -160,6 +283,10 @@ export class Frame extends View {
                 path: timeSegments.cardOpacity
             });
         });
+
+        setTimeout(function() {
+            //_this.timeline.set(_this.time.end, { duration: _this.time.end });
+        }, 500);
     }
 
     getCardTimeSegments(card) {
@@ -172,7 +299,7 @@ export class Frame extends View {
             cardPosition: []
         };
 
-        timeSegments.cardPosition = [[this.time.start, currentPosition],  [(this.time.step1 / 2), [0, 250]],   [this.time.step1, [0, 0]]];
+        timeSegments.cardPosition = [[this.time.start, currentPosition],  [(this.time.step1 / 2), [0, 250]],   [this.time.step1, [0, 75]]];
 
         switch(card.model.i) {
             case 0: //GIFT
@@ -182,19 +309,16 @@ export class Frame extends View {
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]]
                 ];
-
                 timeSegments.cardRotation = [
                     [this.time.start, currentRotation],
                     [300, currentRotation], // Delay
                     [this.time.step1, [(360 * Math.PI / 180), 0, (-270 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [this.time.start, 1],
                     [(this.time.step1 - 1), 1],
                     [this.time.step1, 0]
                 ];
-
                 break;
             case 1: // CREDIT
                 timeSegments.cardScale = [
@@ -203,19 +327,16 @@ export class Frame extends View {
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]]
                 ];
-
                 timeSegments.cardRotation = [
                     [this.time.start, currentRotation],
                     [200, currentRotation], // Delay
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [this.time.start, 1],
                     [(this.time.step1 - 1), 1],
                     [this.time.step1, 0]
                 ];
-
                 break;
             case 2: //MEMBERSHIP
                 timeSegments.cardScale = [
@@ -224,19 +345,16 @@ export class Frame extends View {
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]]
                 ];
-
                 timeSegments.cardRotation = [
                     [this.time.start, currentRotation],
                     [100, currentRotation], // Delay
                     [this.time.step1, [(360 * Math.PI / 180), 0, (-270 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [0, 1],
                     [(this.time.step1 - 1), 1],
                     [this.time.step1, 0]
                 ];
-
                 break;
             case 3: //DEBIT
                 timeSegments.cardScale = [
@@ -244,18 +362,15 @@ export class Frame extends View {
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]]
                 ];
-
                 timeSegments.cardRotation = [
                     [this.time.start, currentRotation],
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [this.time.start, 1],
                     [(this.time.step1 - 1), 1],
                     [this.time.step1, 0]
                 ];
-
                 break;
             case 4: //COIN
                 timeSegments.cardScale = [
@@ -263,22 +378,35 @@ export class Frame extends View {
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]],
                     [this.time.step2, [.2, .2, .2]],
-                    [this.time.end, [.5, .5, .5]]
+                    [this.time.step3, [.5, .5, .5]],
+                    [this.time.step4, [.62, .62, .62]],
+                    [this.time.step5, [.75, .75, .75]]
                 ];
-
                 timeSegments.cardRotation = [
                     [0, currentRotation],
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step2, [(-1080 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
-                    [this.time.end, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]]
+                    [this.time.step3, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step4, [(-270 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step5, [(0 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step6, [(15 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step7, [(0 * Math.PI / 180), 0, (90 * Math.PI / 180)]]
                 ];
-
                 timeSegments.cardOpacity = [
                     [0, 0],
                     [(this.time.step1 - 1), 0],
                     [this.time.step1, 1]
                 ];
-
+                timeSegments.cardPosition = [
+                    [this.time.start, currentPosition],
+                    [(this.time.step1 / 2), [0, 250]],
+                    [this.time.step1, [0, 75]],
+                    [this.time.step3, [0, 75]],
+                    [this.time.step4, [0, 300]],
+                    [this.time.step5, [0, 200]],
+                    [this.time.step7, [0, 200]],
+                    [this.time.step8, [0, 50]]
+                ];
                 break;
         }
 
@@ -289,7 +417,7 @@ export class Frame extends View {
         let duration = 0;
 
         if(e.status === 'start') {
-            this.currentTime = 0;
+            //this.currentTime = 0;
         } else if(e.status === 'move') {
             if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
                 this.currentTime += -1 * e.centerDelta.y * 4;
@@ -316,7 +444,6 @@ export class Frame extends View {
             }
 
             this.timeline.set(this.currentTime, { duration: duration });
-
         }
 
     }

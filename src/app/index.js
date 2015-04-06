@@ -15,8 +15,6 @@ class App extends View {
     }
 
     render() {
-        const _this = this;
-
         this.frame = new Frame({
             node: this.node.addChild(),
             model: ""
