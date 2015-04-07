@@ -172,6 +172,38 @@ export class Frame extends View {
                 _this.scrubTimeline(e);
             }
         }]);
+
+
+    }
+
+    addPostTimelineEvents() {
+        const _this = this;
+        const coinCard = _this.cards[_this.cards.length - 1];
+        const viewPortCenter = {
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2
+        };
+
+        const appSize = this.size.get();
+        const cardSize = coinCard.size.get();
+        const cardPosition ={
+            x: coinCard.position.getX(),
+            y: coinCard.position.getY()
+        };
+        const cardCenter = {
+            x: viewPortCenter.x,
+            y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
+        };
+
+        this.el.on('mousemove');
+        this.dispatch.registerTargetedEvent('mousemove', function(e) {
+            let offset = {
+                x: e.x - cardCenter.x,
+                y: e.y - cardCenter.y
+            };
+
+            console.log('offset',offset.x, offset.y);
+        });
     }
 
     initTimeline() {
@@ -347,8 +379,18 @@ export class Frame extends View {
             });
         });
 
+
+        /*--------------------- APP ---------------------*/
+        this.timeline.registerCallback({
+            time: _this.time.end,
+            direction: 1,
+            fn: function() {
+                _this.addPostTimelineEvents();
+            }
+        });
+
         setTimeout(function() {
-            //_this.timeline.set(_this.time.end, { duration: _this.time.end });
+            _this.timeline.set(_this.time.end, { duration: _this.time.end });
         }, 1000);
     }
 
