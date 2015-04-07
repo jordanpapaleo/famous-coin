@@ -4,7 +4,6 @@ import Utils from '../utils/Utilities';
 import {Timeline} from '../shared/Timeline';
 
 const EventHandler = components.EventHandler;
-const Easing       = transitions.Easing;
 
 export class Card extends View {
     setProperties() {
@@ -20,9 +19,42 @@ export class Card extends View {
     }
 
     render() {
-        this.el.addClass('card-img');
-        this.el.attribute('src', this.model.imgPath);
+        this.addCardBack();
+        this.addCardFront();
+
         this.loadCards();
+    }
+
+    addCardFront() {
+        let cardFront = new View({
+            tagName: 'img',
+            node: this.node.addChild(),
+            model: { imgPath: this.model.front }
+        });
+
+        Utils.setStyle(cardFront, {
+            'backface-visibility': 'hidden'
+        });
+
+        cardFront.size.setProportional(1, 1);
+        cardFront.el.addClass('card-img-front');
+        cardFront.el.attribute('src', cardFront.model.imgPath);
+    }
+
+    addCardBack() {
+        let cardBack = new View({
+            tagName: 'img',
+            node: this.node.addChild(),
+            model: { imgPath: this.model.back }
+        });
+
+        Utils.setStyle(cardBack, {
+            'backface-visibility': 'visible'
+        });
+
+        cardBack.size.setProportional(1, 1);
+        cardBack.el.addClass('card-img-back');
+        cardBack.el.attribute('src', cardBack.model.imgPath);
     }
 
     loadCards() {

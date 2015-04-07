@@ -44,7 +44,7 @@ Utilities.setStyle = function(view, properties) {
     }
 };
 
-Utilities._prefixedRules = ['border-radius'];
+Utilities._prefixedRules = ['border-radius', 'backface-visibility'];
 Utilities._browserPrefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
 Utilities._crossBrowserStyle = function(el, prop, value) {
     this._browserPrefixes.forEach(function(prefix) {

@@ -21,11 +21,10 @@ export class Frame extends View {
     }
 
     render() {
-        const frameStyles = {
+        Utils.setStyle(this, {
             'border': '1px solid black',
             'overflow': 'hidden'
-        };
-        Utils.setStyle(this, frameStyles);
+        });
 
         this.renderBlueScreen();
         this.renderTopText();
@@ -46,11 +45,9 @@ export class Frame extends View {
             mode: {}
         });
 
-        let blueStyles = {
+        Utils.setStyle(this.blueScreen, {
             'background-color': 'rgb(22, 139, 221)'
-        };
-
-        Utils.setStyle(this.blueScreen, blueStyles);
+        });
 
         this.blueScreen.align.set(0, 1, 0);
     }
@@ -75,18 +72,22 @@ export class Frame extends View {
 
         this.cards = [];
         let cardsSrc = [
-            'assets/images/gift.png',
-            'assets/images/credit.png',
-            'assets/images/membership.png',
-            'assets/images/debit.png',
-            'assets/images/coin.png'
+            { front: 'assets/images/gift.png', back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/images/credit.png', back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/images/membership.png', back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/images/debit.png', back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/svg/coinFront.svg', back: 'assets/svg/coinBack.svg'}
         ];
 
         cardsSrc.forEach(function(card, i) {
             let cardNode = new Card({
-                tagName: 'img',
+                tagName: 'div',
                 node: _this.node.addChild(),
-                model: { imgPath: card, i: i }
+                model: {
+                    front: card.front,
+                    back: card.back,
+                    i: i
+                }
             });
 
             if(i === 4) {
@@ -344,7 +345,7 @@ export class Frame extends View {
 
         setTimeout(function() {
             //_this.timeline.set(_this.time.end, { duration: _this.time.end });
-        }, 500);
+        }, 1000);
     }
 
     getCardTimeSegments(card) {

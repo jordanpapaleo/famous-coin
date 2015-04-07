@@ -10,14 +10,12 @@ class TopText extends View {
     }
 
     render() {
-        let topTextStyle = {
+        this.el.content(this.model);
+        Utils.setStyle(this, {
             "font-size": "60px",
             "text-align": "center",
             "font-weight": "200"
-        };
-
-        this.el.content(this.model);
-        Utils.setStyle(this, topTextStyle);
+        });
     }
 }
 
@@ -29,15 +27,13 @@ class TagLine extends View {
     }
 
     render() {
-        let styles = {
+        this.el.content("All your cards<br><strong>one coin</strong>");
+        Utils.setStyle(this, {
             "font-size": "50px",
             "text-align": "center",
             "line-height": "1em",
             "color": "#FFFFFF"
-        };
-
-        this.el.content("All your cards<br><strong>one coin</strong>");
-        Utils.setStyle(this, styles);
+        });
     }
 }
 
@@ -49,15 +45,13 @@ class Coin extends View {
     }
 
     render() {
-        let styles = {
+        this.el.content("coin");
+        Utils.setStyle(this, {
             "font-size": "48px",
             "text-align": "center",
             "line-height": "1em",
             "color": "#000000"
-        };
-
-        this.el.content("coin");
-        Utils.setStyle(this, styles);
+        });
     }
 }
 
@@ -69,15 +63,13 @@ class GetYours extends View {
     }
 
     render() {
-        let styles = {
+        this.el.content("Get yours first");
+        Utils.setStyle(this, {
             "font-size": "42px",
             "text-align": "center",
             "line-height": "1em",
             "color": "#FFFFFF"
-        };
-
-        this.el.content("Get yours first");
-        Utils.setStyle(this, styles);
+        });
     }
 }
 
@@ -91,7 +83,8 @@ class PreOrder extends View {
     }
 
     render() {
-        let styles = {
+        this.el.content("Pre-order now");
+        Utils.setStyle(this, {
             "font-size": "22px",
             "text-align": "center",
             "text-transform": "uppercase",
@@ -100,10 +93,7 @@ class PreOrder extends View {
             "color": "#FFFFFF",
             "background-color": "#000000",
             "border-radius": "4px"
-        };
-
-        this.el.content("Pre-order now");
-        Utils.setStyle(this, styles);
+        });
     }
 }
 
