@@ -8,6 +8,7 @@ import {Timeline} from '../shared/Timeline';
 
 const Easing         = transitions.Easing;
 const GestureHandler = components.GestureHandler;
+const Camera         = components.Camera;
 
 export class Frame extends View {
     pre() {
@@ -18,6 +19,9 @@ export class Frame extends View {
         this.size.setAbsolute(320, 568);
         this.mountPoint.set(.5, .5);
         this.align.set(.5, .5);
+
+        this.camera = new Camera(this.dispatch);
+        this.camera.set(Camera.PINHOLE_PROJECTION, 0, 0, 0);
     }
 
     render() {
