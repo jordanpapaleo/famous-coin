@@ -32,12 +32,11 @@ export class Frame extends View {
         this.renderCards();
         this.renderHand();
         this.renderTagLine();
-        //this.renderCircles();
+        this.renderSpinningCoin();
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
 
-        //this.renderOverlay();
         this.initTimeline();
     }
 
@@ -105,11 +104,48 @@ export class Frame extends View {
         });
     }
 
-    renderCircles() {
-        /*this.tagLine = new TagLine({
-            node: this.node.addChild(),
-            model: {}
-        });*/
+    renderSpinningCoin() {
+        let svgPaths = [
+            'assets/svg/outerCircle.svg',
+            'assets/svg/innerCircle.svg'
+        ];
+
+        this.spinningCoins = [];
+
+        for(var i = 0; i < svgPaths.length; i++) {
+            let coin = new View({
+                tagName: 'img',
+                node: this.node.addChild(),
+                model: {imgPath: svgPaths[i]}
+            });
+
+            coin.el.attribute('src', coin.model.imgPath);
+
+            if(i === 0) {
+                coin.size.setAbsolute(90, 90);
+                coin.position.setY(592);
+                coin.rotation.set(1260 * Math.PI / 180, 1260 * Math.PI / 180, 0, {
+                    curve: 'easeOut',
+                    duration: 4000
+                })
+            }
+
+            if(i === 1) {
+                coin.size.setAbsolute(77, 77);
+                coin.position.setY(604);
+
+                coin.rotation.set(-1800 * Math.PI / 180, -1800 * Math.PI / 180, 0, {
+                    curve: 'easeOut',
+                    duration: 4000
+                })
+            }
+
+            coin.mountPoint.set(.5, 0);
+            coin.align.set(.5, 0);
+            coin.origin.set(.5, .5);
+
+            this.spinningCoins.push(coin);
+        }
     }
 
     renderCoin() {
@@ -151,15 +187,15 @@ export class Frame extends View {
 
         this.time = {
             start: 0,
-            step1: 1500,
-            step2: 2500,
-            step3: 3500, //Stage one done
+            step1: 1500, // Card scale apex
+            step2: 2500, // Card scale basin
+            step3: 3500, // Stage one done: Coin card has scaled back to a resting point
             step4: 4500, //
             step5: 5500, //
-            step6: 5750,
-            step7: 6000,
-            step8: 6500, //Stage two done
-            end:   7000
+            step6: 5750, //
+            step7: 6000, //
+            step8: 6500, // tage two done
+            end:   7000 //
         };
         this.currentTime = 0; //Used in timeline scrubbing
 
@@ -217,13 +253,34 @@ export class Frame extends View {
             ]
         });
 
+        /*--------------------- SPINNING COINS ---------------------*/
+        this.spinningCoins.forEach(function(coin) {
+            let startingYPos = coin.position.getY();
+            let endingYPos = startingYPos / 2;
+
+            _this.timeline.registerComponent({
+                component: coin.position,
+                path: [
+                    [_this.time.start, [0, startingYPos]],
+                    [_this.time.step7, [0, startingYPos]],
+                    [_this.time.step8, [0, endingYPos]],
+                    LINEAR
+                ]
+            });
+
+            /*_this.timeline.registerComponent({
+                component: coin.rotation,
+                path: timeSegments.cardPosition
+            });*/
+        });
+
         /*--------------------- COIN ---------------------*/
         this.timeline.registerComponent({
             component: this.coin.position,
             path: [
                 [this.time.start, [0, this.coin.position.getY()]],
                 [this.time.step7, [0, this.coin.position.getY()]],
-                [this.time.step8, [0, 375]],
+                [this.time.step8, [0, this.coin.position.getY() / 2]],
                 LINEAR
             ]
         });
@@ -234,7 +291,7 @@ export class Frame extends View {
             path: [
                 [this.time.start, [0, this.getYours.position.getY()]],
                 [this.time.step7, [0, this.getYours.position.getY()]],
-                [this.time.step8, [0, 430]],
+                [this.time.step8, [0, this.getYours.position.getY() / 2]],
                 LINEAR
             ]
         });
@@ -245,7 +302,7 @@ export class Frame extends View {
             path: [
                 [this.time.start, [0, this.preOrder.position.getY()]],
                 [this.time.step7, [0, this.preOrder.position.getY()]],
-                [this.time.step8, [0, 500]],
+                [this.time.step8, [0, this.preOrder.position.getY() / 2]],
                 LINEAR
             ]
         });
@@ -419,43 +476,23 @@ export class Frame extends View {
         if(e.status === 'start') {
             //this.currentTime = 0;
         } else if(e.status === 'move') {
-            if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
-                this.currentTime += -1 * e.centerDelta.y * 4;
-            }
 
-            if(this.currentTime < 0) {
-                this.currentTime = 0;
-            }
+            if(this.currentTime >= 0 && this.currentTime <= this.time.end) { this.currentTime += e.centerDelta.y * -4; }
+            if(this.currentTime < 0) { this.currentTime = 0; }
+            if(this.currentTime > this.time.end) { this.currentTime = this.time.end; }
 
-            if(this.currentTime > this.time.end) {
-                this.currentTime = this.time.end;
-            }
-
-            this.timeline.set(this.currentTime, { duration: duration });
         } else if(e.status === 'end') {
-            let apexTime = this.time.step1 / 2;
 
-            if(this.currentTime <= apexTime) {
-                duration = this.currentTime * 1.25; // Lets the float
-                this.currentTime = 0;
-            } else if (this.currentTime < this.time.step2) {
+            if(Math.abs(e.centerVelocity.y) > 250  || this.currentTime > (this.time.step1 / 2)) {
                 duration = this.time.end - this.currentTime;
                 this.currentTime = this.time.end;
+            } else {
+                duration = this.currentTime;
+                this.currentTime = 0;
             }
-
-            this.timeline.set(this.currentTime, { duration: duration });
         }
 
-    }
+        this.timeline.set(this.currentTime, { duration: duration });
 
-    renderOverlay() {
-        this.overlay = new View({
-            tagName: 'img',
-            node: this.node.addChild()
-        });
-
-        this.overlay.el.attribute('src', 'assets/images/ScreenShot1.png');
-        this.overlay.size.setProportional(1, 1);
-        this.overlay.opacity.set(.7);
     }
 }

@@ -23,6 +23,16 @@ Utilities.layoutColumns = function(views) {
     });
 };
 
+Utilities.layoutRows = function(views) {
+    let proportion = 1 / views.length;
+
+    views.forEach(function(view, i) {
+        view.size.setProportional(1, proportion);
+        view.align.set(0, proportion * i);
+        view.mountPoint.set(0, 0);
+    });
+};
+
 Utilities.setStyle = function(view, properties) {
     for(var prop in properties) {
         if(this._prefixedRules.indexOf(prop) === -1) {

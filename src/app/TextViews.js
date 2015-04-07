@@ -45,7 +45,7 @@ class Coin extends View {
     setProperties() {
         this.size.setAbsolute(318, 50);
         this.opacity.set(1);
-        this.position.setY(562);
+        this.position.setY(780);
     }
 
     render() {
@@ -65,7 +65,7 @@ class GetYours extends View {
     setProperties() {
         this.size.setAbsolute(318, 50);
         this.opacity.set(1);
-        this.position.setY(645);
+        this.position.setY(880);
     }
 
     render() {
@@ -87,7 +87,7 @@ class PreOrder extends View {
         this.mountPoint.set(.5, 0);
         this.size.setAbsolute(220, 40);
         this.opacity.set(1);
-        this.position.setY(750);
+        this.position.setY(1000);
     }
 
     render() {
