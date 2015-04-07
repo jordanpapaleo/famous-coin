@@ -119,30 +119,18 @@ export class Frame extends View {
                 model: {imgPath: svgPaths[i]}
             });
 
-            coin.el.attribute('src', coin.model.imgPath);
-
             if(i === 0) {
                 coin.size.setAbsolute(90, 90);
                 coin.position.setY(592);
-                coin.rotation.set(1260 * Math.PI / 180, 1260 * Math.PI / 180, 0, {
-                    curve: 'easeOut',
-                    duration: 4000
-                })
-            }
-
-            if(i === 1) {
+            } else if(i === 1) {
                 coin.size.setAbsolute(77, 77);
                 coin.position.setY(604);
-
-                coin.rotation.set(-1800 * Math.PI / 180, -1800 * Math.PI / 180, 0, {
-                    curve: 'easeOut',
-                    duration: 4000
-                })
             }
 
             coin.mountPoint.set(.5, 0);
             coin.align.set(.5, 0);
             coin.origin.set(.5, .5);
+            coin.el.attribute('src', coin.model.imgPath);
 
             this.spinningCoins.push(coin);
         }
@@ -184,20 +172,20 @@ export class Frame extends View {
     initTimeline() {
         const LINEAR = Easing.getCurve('linear');
         const _this = this;
+        this.currentTime = 0; //Used in timeline scrubbing
 
         this.time = {
             start: 0,
             step1: 1500, // Card scale apex
             step2: 2500, // Card scale basin
             step3: 3500, // Stage one done: Coin card has scaled back to a resting point
-            step4: 4500, //
-            step5: 5500, //
-            step6: 5750, //
-            step7: 6000, //
-            step8: 6500, // tage two done
+            step4: 4500, // Coin card scale and flip starting
+            step5: 5500, // Coin card scale and flip apex
+            step6: 5750, // Coin card scale and flip almost done
+            step7: 6000, // End state text starts moving in
+            step8: 6500, // Stage two done: Tag line and coin card are moving up and out
             end:   7000 //
         };
-        this.currentTime = 0; //Used in timeline scrubbing
 
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerComponent({
@@ -240,6 +228,15 @@ export class Frame extends View {
             ]
         });
 
+        this.timeline.registerComponent({
+            component: this.hand.opacity,
+            path: [
+                [this.time.start, this.hand.opacity.get()],
+                [this.time.step1, 0],
+                LINEAR
+            ]
+        });
+
         /*--------------------- TAG LINE ---------------------*/
         this.timeline.registerComponent({
             component: this.tagLine.position,
@@ -254,7 +251,7 @@ export class Frame extends View {
         });
 
         /*--------------------- SPINNING COINS ---------------------*/
-        this.spinningCoins.forEach(function(coin) {
+        this.spinningCoins.forEach(function(coin, i) {
             let startingYPos = coin.position.getY();
             let endingYPos = startingYPos / 2;
 
@@ -268,10 +265,23 @@ export class Frame extends View {
                 ]
             });
 
-            /*_this.timeline.registerComponent({
-                component: coin.rotation,
-                path: timeSegments.cardPosition
-            });*/
+            _this.timeline.registerCallback({
+                time: _this.time.step7,
+                direction: 1,
+                fn: function() {
+                    if(i === 0) {
+                        coin.rotation.set(1080 * Math.PI / 180, 720 * Math.PI / 180, 0, {
+                            curve: 'easeOut',
+                            duration: 3000
+                        });
+                    } else if(i === 1) {
+                        coin.rotation.set(-1440 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
+                            curve: 'easeOut',
+                            duration: 3000
+                        });
+                    }
+                }
+            });
         });
 
         /*--------------------- COIN ---------------------*/
@@ -303,15 +313,6 @@ export class Frame extends View {
                 [this.time.start, [0, this.preOrder.position.getY()]],
                 [this.time.step7, [0, this.preOrder.position.getY()]],
                 [this.time.step8, [0, this.preOrder.position.getY() / 2]],
-                LINEAR
-            ]
-        });
-
-        this.timeline.registerComponent({
-            component: this.hand.opacity,
-            path: [
-                [this.time.start, this.hand.opacity.get()],
-                [this.time.step1, 0],
                 LINEAR
             ]
         });
