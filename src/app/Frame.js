@@ -55,6 +55,7 @@ export class Frame extends View {
 
         this.blueScreen.align.set(0, 0, 0);
         this.blueScreen.position.setY(570);
+        this.blueScreen.position.setZ(-1000);
     }
 
     renderTopText() {
@@ -70,6 +71,8 @@ export class Frame extends View {
             node: this.node.addChild(),
             model: { imgPath: 'assets/svg/hand.svg' }
         });
+
+        this.hand.position.setZ(2000);
     }
 
     renderCards() {
@@ -95,9 +98,7 @@ export class Frame extends View {
                 }
             });
 
-            if(i === 4) {
-                cardNode.opacity.set(0);
-            }
+            if(i === cardsSrc.length - 1) { cardNode.opacity.set(0); }
 
             _this.cards.push(cardNode);
         });
@@ -173,8 +174,6 @@ export class Frame extends View {
                 _this.scrubTimeline(e);
             }
         }]);
-
-
     }
 
     addPostTimelineEvents() {
@@ -247,9 +246,9 @@ export class Frame extends View {
         this.timeline.registerComponent({
             component: this.blueScreen.position,
             path: [
-                [this.time.start, [0, 570, 0]],
-                [this.time.step3, [0, 570, 0]],
-                [this.time.step5, [0, -1, 0]],
+                [this.time.start, [0, 570]],
+                [this.time.step3, [0, 570]],
+                [this.time.step5, [0, -1]],
                 LINEAR
             ]
         });
@@ -278,8 +277,8 @@ export class Frame extends View {
         this.timeline.registerComponent({
             component: this.hand.position,
             path: [
-                [this.time.start, [0, this.hand.position.getY()]],
-                [this.time.step1, [0, -75]], // The element is 75px tall, this puts it out of view
+                [this.time.start, [0, this.hand.position.getY()]], //TODO BUG: this is always starting at 0...
+                [this.time.step1, [0, -75]], // The element is 75px tall, this moves it out of view at the top
                 LINEAR
             ]
         });
@@ -398,7 +397,6 @@ export class Frame extends View {
             });
         });
 
-
         /*--------------------- APP ---------------------*/
         this.timeline.registerCallback({
             time: _this.time.end,
@@ -407,15 +405,11 @@ export class Frame extends View {
                 _this.addPostTimelineEvents();
             }
         });
-
-        setTimeout(function() {
-            //_this.timeline.set(_this.time.end, { duration: _this.time.end });
-        }, 2000);
     }
 
     getCardTimeSegments(card) {
-        let currentPosition = [card.model.position.x, card.model.position.y];
-        let currentRotation = [0, 0, card.model.rotation.z];
+        let currentPosition = [card.model.position.x, card.model.position.y, card.model.position.z];
+        let currentRotation = [card.model.rotation.x, card.model.rotation.y, card.model.rotation.z];
         let timeSegments = {
             cardScale: [],
             cardRotation: [],
@@ -423,7 +417,11 @@ export class Frame extends View {
             cardPosition: []
         };
 
-        timeSegments.cardPosition = [[this.time.start, currentPosition],  [(this.time.step1 / 2), [0, 250]],   [this.time.step1, [0, 75]]];
+        timeSegments.cardPosition = [
+            [this.time.start, currentPosition],
+            [(this.time.step1 / 2), [0, 250, card.model.position.z]],
+            [this.time.step1, [0, 75, card.model.position.z]]
+        ];
 
         switch(card.model.i) {
             case 0: //GIFT
@@ -541,27 +539,36 @@ export class Frame extends View {
         let duration = 0;
 
         if(e.status === 'start') {
-            console.log('----- START -----');
+            //console.log('----- START -----');
+            //console.log('Hand Position', this.hand.position.getY());
             //this.currentTime = 0;
         } else if(e.status === 'move') {
+            //console.log('----- MOVE -----');
 
+            // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
+            // The negative of the number is required bc the values are oposite of the desired movement
             if(this.currentTime >= 0 && this.currentTime <= this.time.end) { this.currentTime += e.centerDelta.y * -4; }
+
+            //The previous math can leave values that are outside of the working value range
             if(this.currentTime < 0) { this.currentTime = 0; }
             if(this.currentTime > this.time.end) { this.currentTime = this.time.end; }
 
         } else if(e.status === 'end') {
-            console.log('----- END -----');
+            //console.log('----- END -----');
 
             if(Math.abs(e.centerVelocity.y) > 250  || this.currentTime > (this.time.step1 / 2)) {
+                //console.log('--- finish ---');
                 duration = this.time.end - this.currentTime;
                 this.currentTime = this.time.end;
             } else {
+                //console.log('--- reset ---');
+
                 duration = this.currentTime;
                 this.currentTime = 0;
-                this.hand.restartAnimation();
+                this.dispatch.emit('resetApp', { duration });
             }
         }
 
-        this.timeline.set(this.currentTime, { duration: duration });
+        this.timeline.set(this.currentTime, { duration });
     }
 }

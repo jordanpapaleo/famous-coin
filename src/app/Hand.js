@@ -27,12 +27,13 @@ export class Hand extends View {
         let duration = 1200;
 
         this.position.setY(196, {
+            duration,
             curve: 'linear',
-            duration: duration
         }, function() {
             _this.resetHand();
         });
 
+        // Start the opacity half way through the animation
         setTimeout(function() {
             _this.opacity.set(0, {
                 curve: 'linear',
@@ -46,8 +47,13 @@ export class Hand extends View {
 
         const _this = this;
         this.position.setY(296, { duration: 0 }, function() {
+
+            //TODO BUG:  Callbacks are not working correctly
             setTimeout(function() {
                 _this.opacity.set(1, { duration: 100}, function() {
+
+                    //TODO BUG:  Callbacks are not working correctly
+                    // A quick pause after the animation completes
                     setTimeout(function() {
                         _this.animateHand();
                     }, 200);
@@ -63,6 +69,8 @@ export class Hand extends View {
 
     stopAnimation() {
         this.isHalted = true;
+        this.opacity.halt();
+        this.position.halt();
     }
 
     restartAnimation() {
@@ -74,8 +82,14 @@ export class Hand extends View {
         const _this = this;
         this.eventHandler = new EventHandler(this.dispatch);
 
-        this.eventHandler.on('dragging', function() {
-            _this.stopAnimation();
+        this.eventHandler.on('dragging', function(message) {
+            if(message.status === 'start') {
+                _this.stopAnimation();
+            }
+        });
+
+        this.eventHandler.on('resetApp', function(message) {
+            _this.restartAnimation();
         });
     }
 }

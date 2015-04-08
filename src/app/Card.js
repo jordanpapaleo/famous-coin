@@ -11,11 +11,13 @@ export class Card extends View {
         this.mountPoint.set(.5, 0);
         this.align.set(.5, 0);
         this.origin.set(0.5, 0.5, 0.5);
-        this.position.setX(-300);
-        this.position.setY(300);
         this.scale.setX(.5);
         this.scale.setY(.5);
         this.scale.setZ(.5);
+
+        this.position.setZ(this.model.i * 350);
+        this.position.setX(-300);
+        this.position.setY(300);
     }
 
     render() {
@@ -98,16 +100,16 @@ export class Card extends View {
                 z: rotation
             };
 
-            _this.model.position = {
-                x: position.x,
-                y: position.y
-            };
+            _this.model.position = position;
+            _this.model.position.z = _this.position.getZ();
 
             //TODO BUG: Remove timeout once callback is fixed
             setTimeout(function() {
                 const options = { curve: 'outBack', duration: 500 };
                 _this.rotation.setZ(rotation, options);
-                _this.position.set(position.x, position.y, 1, options);
+
+                _this.position.setX(position.x, options);
+                _this.position.setY(position.y, options);
             }, 700);
         });
     }
