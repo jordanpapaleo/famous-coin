@@ -61,8 +61,8 @@ export class Card extends View {
         const _this = this;
 
         this.position.setX(0, {
-            curve: 'easeOut',
-            duration: 500
+            curve: 'easeInOut',
+            duration: 650
         }, function() {
             let rotation = 0;
             let position = { x: 0, y: 300 };

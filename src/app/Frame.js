@@ -53,7 +53,8 @@ export class Frame extends View {
             'background-color': 'rgb(22, 139, 221)'
         });
 
-        this.blueScreen.align.set(0, 1, 0);
+        this.blueScreen.align.set(0, 0, 0);
+        this.blueScreen.position.setY(570);
     }
 
     renderTopText() {
@@ -202,7 +203,25 @@ export class Frame extends View {
                 y: e.y - cardCenter.y
             };
 
-            console.log('offset',offset.x, offset.y);
+            if(offset.x > -125 && offset.x < 125 && offset.y > -145 && offset.y < 145) {
+                let rotation = {
+                    x: ((offset.y * Math.PI) / 4) / 180,
+                    y: ((offset.x * Math.PI) / 3) / 180
+                };
+
+                coinCard.rotation.setX(rotation.x);
+                coinCard.rotation.setY(rotation.y);
+            } else {
+                coinCard.rotation.setX(0, {
+                    curve: 'spring',
+                    duration: 1000
+                });
+
+                coinCard.rotation.setY(0, {
+                    curve: 'spring',
+                    duration: 1000
+                });
+            }
         });
     }
 
@@ -226,11 +245,11 @@ export class Frame extends View {
 
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerComponent({
-            component: this.blueScreen.align,
+            component: this.blueScreen.position,
             path: [
-                [this.time.start, [0, 1, 0]],
-                [this.time.step3, [0, 1, 0]],
-                [this.time.step5, [0, 0, 0]],
+                [this.time.start, [0, 570, 0]],
+                [this.time.step3, [0, 570, 0]],
+                [this.time.step5, [0, -1, 0]],
                 LINEAR
             ]
         });
@@ -390,8 +409,8 @@ export class Frame extends View {
         });
 
         setTimeout(function() {
-            _this.timeline.set(_this.time.end, { duration: _this.time.end });
-        }, 1000);
+            //_this.timeline.set(_this.time.end, { duration: _this.time.end });
+        }, 2000);
     }
 
     getCardTimeSegments(card) {
