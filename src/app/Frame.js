@@ -541,6 +541,7 @@ export class Frame extends View {
         let duration = 0;
 
         if(e.status === 'start') {
+            console.log('----- START -----');
             //this.currentTime = 0;
         } else if(e.status === 'move') {
 
@@ -549,6 +550,7 @@ export class Frame extends View {
             if(this.currentTime > this.time.end) { this.currentTime = this.time.end; }
 
         } else if(e.status === 'end') {
+            console.log('----- END -----');
 
             if(Math.abs(e.centerVelocity.y) > 250  || this.currentTime > (this.time.step1 / 2)) {
                 duration = this.time.end - this.currentTime;
@@ -556,10 +558,10 @@ export class Frame extends View {
             } else {
                 duration = this.currentTime;
                 this.currentTime = 0;
+                this.hand.restartAnimation();
             }
         }
 
         this.timeline.set(this.currentTime, { duration: duration });
-
     }
 }

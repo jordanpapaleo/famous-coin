@@ -65,6 +65,11 @@ export class Hand extends View {
         this.isHalted = true;
     }
 
+    restartAnimation() {
+        this.isHalted = false;
+        this.resetHand();
+    }
+
     setEvents() {
         const _this = this;
         this.eventHandler = new EventHandler(this.dispatch);
