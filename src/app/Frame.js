@@ -49,12 +49,14 @@ export class Frame extends View {
             mode: {}
         });
 
+        this.blueScreen.size.setAbsolute(320, 580);
+
         Utils.setStyle(this.blueScreen, {
             'background-color': 'rgb(22, 139, 221)'
         });
 
         this.blueScreen.align.set(0, 0, 0);
-        this.blueScreen.position.setY(570);
+        this.blueScreen.position.setY(580);
         this.blueScreen.position.setZ(-1000);
     }
 
@@ -202,21 +204,20 @@ export class Frame extends View {
                 y: e.y - cardCenter.y
             };
 
-            if(offset.x > -125 && offset.x < 125 && offset.y > -145 && offset.y < 145) {
-                let rotation = {
-                    x: ((offset.y * Math.PI) / 4) / 180,
-                    y: ((offset.x * Math.PI) / 3) / 180
-                };
+            let maxOffsetX = 145;
+            let maxOffsetY = 140;
 
-                coinCard.rotation.setX(rotation.x);
-                coinCard.rotation.setY(rotation.y);
+            if(offset.x > -maxOffsetX && offset.x < maxOffsetX && offset.y > -maxOffsetY && offset.y < maxOffsetY) {
+                //We Flip the X and Y here because the card has a rotation of 90 degrees, which flips its axis
+                coinCard.rotation.setY((((offset.x * Math.PI) / 3) / 180));
+                coinCard.rotation.setX((((offset.y * Math.PI) / 4) / 180));
             } else {
-                coinCard.rotation.setX(0, {
+                coinCard.rotation.setY(0, {
                     curve: 'spring',
                     duration: 1000
                 });
 
-                coinCard.rotation.setY(0, {
+                coinCard.rotation.setX(0, {
                     curve: 'spring',
                     duration: 1000
                 });
@@ -246,9 +247,9 @@ export class Frame extends View {
         this.timeline.registerComponent({
             component: this.blueScreen.position,
             path: [
-                [this.time.start, [0, 570]],
-                [this.time.step3, [0, 570]],
-                [this.time.step5, [0, -1]],
+                [this.time.start, [0, 580]],
+                [this.time.step3, [0, 580]],
+                [this.time.step5, [0, -6]],
                 LINEAR
             ]
         });
