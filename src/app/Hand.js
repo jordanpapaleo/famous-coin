@@ -87,7 +87,7 @@ export class Hand extends View {
         this.eventHandler = new EventHandler(this.dispatch);
 
         this.eventHandler.on('dragging', function(message) {
-            if(message.status === 'start') {
+            if(message === 'start') {
                 _this.stopAnimation();
             }
         });

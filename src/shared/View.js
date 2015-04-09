@@ -43,4 +43,27 @@ export class View {
     post() {
         //Used to be a post launching point
     }
+
+    onCustomEvent(evName, fn) {
+        if(!this.eventHandler) this.eventHandler = new EventHandler(this.dispatch);
+        this.eventHandler.on(evName, fn);
+    }
+
+    onDomEvent(evName, methods, properties, fn) {
+        var i;
+        if(!this.el) this.el = new HTMLElement(this.dispatch);
+        if(properties instanceof Array) {
+            if(!(evName instanceof Array)) evName = [evName];
+            for(i = 0; i < evName.length; i++) {
+                this.el.on(evName[i], methods, properties);
+                this.dispatch.registerTargetedEvent(evName[i], fn);
+            }
+        } else {
+            if(!(evName instanceof Array)) evName = [evName];
+            for(i = 0; i < evName.length; i++) {
+                this.el.on(evName[i], methods);
+                this.dispatch.registerTargetedEvent(evName[i], properties);
+            }
+        }
+    }
 }

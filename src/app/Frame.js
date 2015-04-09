@@ -171,13 +171,42 @@ export class Frame extends View {
 
     setEvents() {
         const _this = this;
-        this.gestureHandler = new GestureHandler(this.dispatch, [{
-            event: 'drag',
-            callback: function(e) {
-                _this.dispatch.emit('dragging', e);
+        let isScrubbing = false;
+        let hasFinished = false;
+
+        this.onDomEvent('mousedown', ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+            if(!hasFinished) {
+                _this.dispatch.emit('dragging', 'start');
+                isScrubbing = true;
+            }
+        });
+
+        this.onDomEvent('mousemove', ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+            if(isScrubbing) {
                 _this.scrubTimeline(e);
             }
-        }]);
+        });
+
+        this.onDomEvent(['mouseup'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+            isScrubbing = false;
+            let duration;
+
+            setTimeout(function () {
+                if(_this.currentTime > (_this.time.step1 / 2)) { //FINISH
+                    duration = _this.time.end - _this.currentTime;
+
+                    _this.currentTime = _this.time.end;
+                    _this.timeline.set(_this.currentTime, { duration });
+                    hasFinished = true;
+                } else {  //RESET
+                    duration = _this.currentTime;
+
+                    _this.dispatch.emit('resetApp', { duration });
+                    _this.currentTime = 0;
+                    _this.timeline.set(_this.currentTime, { duration });
+                }
+            }, 0);
+        });
     }
 
     addPostTimelineEvents() {
@@ -199,8 +228,19 @@ export class Frame extends View {
             y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
         };
 
-        this.el.on('mousemove');
-        this.dispatch.registerTargetedEvent('mousemove', function(e) {
+        this.onDomEvent(['mouseleave', 'mouseout'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+            coinCard.rotation.setY(0, {
+                curve: 'spring',
+                duration: 1000
+            });
+
+            coinCard.rotation.setX(0, {
+                curve: 'spring',
+                duration: 1000
+            });
+        });
+
+        this.onDomEvent(['mousemove'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
             let offset = {
                 x: e.x - cardCenter.x,
                 y: e.y - cardCenter.y
@@ -541,40 +581,29 @@ export class Frame extends View {
     scrubTimeline(e) {
         let duration = 0;
 
-        if(e.status === 'move') {
-            //console.log('----- MOVE -----');
+        // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
+        // The negative of the number is required bc the values are oposite of the desired movement
+        if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
+            this.currentTime += e.movementY * -4;
+        }
 
-            // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
-            // The negative of the number is required bc the values are oposite of the desired movement
-            if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
-                this.currentTime += e.centerDelta.y * -4;
-            }
+        //The previous math can leave values that are outside of the working value range
+        if(this.currentTime < 0) {
+            this.currentTime = 0;
+        }
 
-            //The previous math can leave values that are outside of the working value range
-            if(this.currentTime < 0) {
-                this.currentTime = 0;
-            }
-
-            if(this.currentTime > this.time.end) {
-                this.currentTime = this.time.end;
-            }
-
-        } else if(e.status === 'end') {
-            //console.log('----- END -----');
-
-            if(Math.abs(e.centerVelocity.y) > 250  || this.currentTime > (this.time.step1 / 2)) {
-                //console.log('--- finish ---');
-                duration = this.time.end - this.currentTime;
-                this.currentTime = this.time.end;
-            } else {
-                //console.log('--- reset ---');
-
-                duration = this.currentTime;
-                this.currentTime = 0;
-                this.dispatch.emit('resetApp', { duration });
-            }
+        if(this.currentTime > this.time.end) {
+            this.currentTime = this.time.end;
         }
 
         this.timeline.set(this.currentTime, { duration });
+    }
+
+    finishTimeline() {
+
+    }
+
+    restartTimeline() {
+
     }
 }
