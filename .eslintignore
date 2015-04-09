@@ -1,4 +1,3 @@
 node_modules/*
 **/*.{json,md,txt}
-src/site/services/AudioSynth.js
-src/site/Grid.js
+src/shared/Timeline.js
