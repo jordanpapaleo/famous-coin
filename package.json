@@ -12,10 +12,11 @@
     "build": "npm run build-main",
     "watch": "npm run watch-main",
     "lint-eslint": "eslint src/",
-    "lint-jscs": "jscs src/",
-    "lint": "npm run lint-eslint && npm run lint-jscs"
+    "lint-jscs": "jscs --esnext src/",
+    "lint": "npm run lint-eslint --force && npm run lint-jscs --force"
   },
   "devDependencies": {
+    "babel-eslint": "^2.0.2",
     "babelify": "^5.0.3",
     "browser-sync": "^2.0.0-rc10",
     "browserify": "^8.0.3",

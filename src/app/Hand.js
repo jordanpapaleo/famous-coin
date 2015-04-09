@@ -21,14 +21,16 @@ export class Hand extends View {
     }
 
     animateHand() {
-        if(this.isHalted) return;
+        if(this.isHalted) {
+            return;
+        }
 
         const _this = this;
         let duration = 1200;
 
         this.position.setY(196, {
             duration,
-            curve: 'linear',
+            curve: 'linear'
         }, function() {
             _this.resetHand();
         });
@@ -43,7 +45,9 @@ export class Hand extends View {
     }
 
     resetHand() {
-        if(this.isHalted) return;
+        if(this.isHalted) {
+            return;
+        }
 
         const _this = this;
         this.position.setY(296, { duration: 0 }, function() {

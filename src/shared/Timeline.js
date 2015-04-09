@@ -5,7 +5,6 @@ const Size           = components.Size;
 const Easing         = transitions.Easing;
 const Transitionable = transitions.Transitionable;
 
-
 var easingCurveLinear = Easing.getCurve('linear');
 
 export class Timeline {
@@ -14,7 +13,7 @@ export class Timeline {
         this.timescale = options.timescale || 1;
         this.currentTime = new Transitionable(0);
         this.callbacks = [];
-        this.direction;
+        this.direction = null;
         //for now update on all ticks until clock gets fixed
         Famous.getClock().update(this);
     }
@@ -36,27 +35,28 @@ export class Timeline {
     /*eslint no-underscore-dangle:0*/
     addKeyframes(keyframeObjs) {
         var layers = [];
-        var keyframe;
-        var nodeProperty;
-        var id;
-        var i;
-        var j;
+        var keyframe, nodeProperty, id, i, j;
+
         for (i = 0; i < keyframeObjs.length; i++) {
             var keyframes = keyframeObjs[i].keyframes;
+
             for(j = 0; j < keyframes.length; j++) {
                 keyframe = keyframes[j];
                 nodeProperty = keyframe.shift();
                 id = nodeProperty._dispatch._renderProxy._id;
                 keyframe.unshift(keyframeObjs[i].time);
+
                 if (!layers[id]) {
                     layers[id] = {
                         component: nodeProperty,
                         path: []
                     };
                 }
+
                 layers[id].path.push(keyframe);
             }
         }
+
         for (id in layers) {
             this.registerComponent(layers[id]);
         }
@@ -72,6 +72,7 @@ export class Timeline {
                 // Famous.getClock().noLongerUpdate(this);
                 this.update();
                 this.inTransition = false;
+
                 if (callback) {
                     callback();
                 }
@@ -87,34 +88,36 @@ export class Timeline {
     update(time) {
         if (this.inTransition) {
             var res = [];
+            const _this = this;
             time = this.currentTime.get() * this.timescale;
 
-            for(var i=0; i<this.callbacks.length; i++) {
-                if(this.direction > 0 && this.callbacks[i].direction > 0) {
+            this.callbacks.forEach(function(callback) {
+                if(_this.direction > 0 && callback.direction > 0) {
                     //forward
-                    if(time >= this.callbacks[i].time) {
-                        this.callbacks[i].fn();
-                        this.callbacks[i].direction = -1; //set to backwards
+                    if(time >= callback.time) {
+                        callback.fn();
+                        callback.direction = -1; //set to backwards
                     }
-                }else if(this.direction < 0 && this.callbacks[i].direction < 0){
-                    if(time <= this.callbacks[i].time) {
-                        this.callbacks[i].fn();
-                        this.callbacks[i].direction = 1; //set to forwards
+                } else if(_this.direction < 0 && callback.direction < 0){
+                    if(time <= callback.time) {
+                        callback.fn();
+                        callback.direction = 1; //set to forwards
                     }
                 }
-
-            }
+            });
 
             for (var i = 0; i < this.componentSet.length; i++) {
                 var animData = this.componentSet[i];
+
                 for (var j = 0; j < animData.path.length; j++) {
+                    var currStep, nextStep;
                     if(this.direction) {
                         //forward
-                        var currStep = animData.path[j];
-                        var nextStep = animData.path[j + 1];
-                    }else {
-                        var currStep = animData.path[j + 1];
-                        var nextStep = animData.path[j];
+                        currStep = animData.path[j];
+                        nextStep = animData.path[j + 1];
+                    } else {
+                        currStep = animData.path[j + 1];
+                        nextStep = animData.path[j];
                     }
 
                     //currently mid path, calculate and apply.
@@ -126,8 +129,12 @@ export class Timeline {
                             for (var k = 0; k < currStep[1].length; k++) {
                                 res[k] = currStep[1][k] + (nextStep[1][k] - currStep[1][k]) * state;
                             }
-                            if(animData.component instanceof Size) animData.component.setAbsolute.apply(animData.component, res);
-                            else animData.component.set.apply(animData.component, res);
+
+                            if(animData.component instanceof Size) {
+                                animData.component.setAbsolute.apply(animData.component, res);
+                            } else {
+                                animData.component.set.apply(animData.component, res);
+                            }
                         } else {
                             animData.component.set(currStep[1] + (nextStep[1] - currStep[1]) * state);
                         }
@@ -135,8 +142,11 @@ export class Timeline {
                     //we are passed last step, set object to final state.
                     if(!nextStep && currStep[0] < time) {
                         if(currStep[1] instanceof Array) {
-                            if(animData.component instanceof Size) animData.component.setAbsolute.apply(animData.component, res);
-                            else animData.component.set.apply(animData.component, currStep[1]);
+                            if(animData.component instanceof Size) {
+                                animData.component.setAbsolute.apply(animData.component, res);
+                            } else {
+                                animData.component.set.apply(animData.component, currStep[1]);
+                            }
                         } else {
                             animData.component.set(currStep[1]);
                         }

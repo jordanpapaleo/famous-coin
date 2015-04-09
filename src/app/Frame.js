@@ -63,7 +63,7 @@ export class Frame extends View {
     renderTopText() {
         this.topText = new TopText({
             node: this.node.addChild(),
-            model: "Try<br>simple"
+            model: 'Try<br>simple'
         });
     }
 
@@ -100,7 +100,9 @@ export class Frame extends View {
                 }
             });
 
-            if(i === cardsSrc.length - 1) { cardNode.opacity.set(0); }
+            if(i === cardsSrc.length - 1) {
+                cardNode.opacity.set(0);
+            }
 
             _this.cards.push(cardNode);
         });
@@ -161,7 +163,7 @@ export class Frame extends View {
 
     renderPreOrder() {
         this.preOrder = new PreOrder({
-            tag: "button",
+            tag: 'button',
             node: this.node.addChild(),
             model: {}
         });
@@ -169,7 +171,7 @@ export class Frame extends View {
 
     setEvents() {
         const _this = this;
-        new GestureHandler(this.dispatch, [{
+        this.gestureHandler = new GestureHandler(this.dispatch, [{
             event: 'drag',
             callback: function(e) {
                 _this.dispatch.emit('dragging', e);
@@ -240,7 +242,7 @@ export class Frame extends View {
             step6: 5750, // Coin card scale and flip almost done
             step7: 6000, // End state text starts moving in
             step8: 6500, // Stage two done: Tag line and coin card are moving up and out
-            end:   7000 //
+            end: 7000 //
         };
 
         /*--------------------- BLUE SCREEN ---------------------*/
@@ -539,20 +541,23 @@ export class Frame extends View {
     scrubTimeline(e) {
         let duration = 0;
 
-        if(e.status === 'start') {
-            //console.log('----- START -----');
-            //console.log('Hand Position', this.hand.position.getY());
-            //this.currentTime = 0;
-        } else if(e.status === 'move') {
+        if(e.status === 'move') {
             //console.log('----- MOVE -----');
 
             // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
             // The negative of the number is required bc the values are oposite of the desired movement
-            if(this.currentTime >= 0 && this.currentTime <= this.time.end) { this.currentTime += e.centerDelta.y * -4; }
+            if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
+                this.currentTime += e.centerDelta.y * -4;
+            }
 
             //The previous math can leave values that are outside of the working value range
-            if(this.currentTime < 0) { this.currentTime = 0; }
-            if(this.currentTime > this.time.end) { this.currentTime = this.time.end; }
+            if(this.currentTime < 0) {
+                this.currentTime = 0;
+            }
+
+            if(this.currentTime > this.time.end) {
+                this.currentTime = this.time.end;
+            }
 
         } else if(e.status === 'end') {
             //console.log('----- END -----');

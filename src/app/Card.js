@@ -3,8 +3,6 @@ import {View} from '../shared/View';
 import Utils from '../utils/Utilities';
 import {Timeline} from '../shared/Timeline';
 
-const EventHandler = components.EventHandler;
-
 export class Card extends View {
     setProperties() {
         this.size.setAbsolute(350, 220);

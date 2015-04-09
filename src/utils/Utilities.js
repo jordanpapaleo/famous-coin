@@ -1,18 +1,5 @@
 const Utilities = {};
 
-Utilities.extend = function(base, addon) { // extends one object to another
-    var result = {};
-    for(var key in base) {
-        result[key] = base[key];
-    }
-    for(var key in addon) {
-        if(!result[key]) {
-            result[key] = addon[key];
-        }
-    }
-    return result;
-};
-
 Utilities.layoutColumns = function(views) {
     let proportion = 1 / views.length;
 
@@ -38,9 +25,8 @@ Utilities.setStyle = function(view, properties) {
         if(this._prefixedRules.indexOf(prop) === -1) {
             view.el.property(prop, properties[prop]);
         } else {
-          this._crossBrowserStyle(view.el, prop, properties[prop])
+          this._crossBrowserStyle(view.el, prop, properties[prop]);
         }
-
     }
 };
 

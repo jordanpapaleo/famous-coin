@@ -12,9 +12,9 @@ class TopText extends View {
     render() {
         this.el.content(this.model);
         Utils.setStyle(this, {
-            "font-size": "60px",
-            "text-align": "center",
-            "font-weight": "200"
+            'font-size': '60px',
+            'text-align': 'center',
+            'font-weight': '200'
         });
     }
 }
@@ -27,12 +27,12 @@ class TagLine extends View {
     }
 
     render() {
-        this.el.content("All your cards<br><strong>one coin</strong>");
+        this.el.content('All your cards<br><strong>one coin</strong>');
         Utils.setStyle(this, {
-            "font-size": "50px",
-            "text-align": "center",
-            "line-height": "1em",
-            "color": "#FFFFFF"
+            'font-size': '50px',
+            'text-align': 'center',
+            'line-height': '1em',
+            'color': '#FFFFFF'
         });
     }
 }
@@ -45,12 +45,12 @@ class Coin extends View {
     }
 
     render() {
-        this.el.content("coin");
+        this.el.content('coin');
         Utils.setStyle(this, {
-            "font-size": "48px",
-            "text-align": "center",
-            "line-height": "1em",
-            "color": "#000000"
+            'font-size': '48px',
+            'text-align': 'center',
+            'line-height': '1em',
+            'color': '#000000'
         });
     }
 }
@@ -63,12 +63,12 @@ class GetYours extends View {
     }
 
     render() {
-        this.el.content("Get yours first");
+        this.el.content('Get yours first');
         Utils.setStyle(this, {
-            "font-size": "42px",
-            "text-align": "center",
-            "line-height": "1em",
-            "color": "#FFFFFF"
+            'font-size': '42px',
+            'text-align': 'center',
+            'line-height': '1em',
+            'color': '#FFFFFF'
         });
     }
 }
@@ -83,16 +83,16 @@ class PreOrder extends View {
     }
 
     render() {
-        this.el.content("Pre-order now");
+        this.el.content('Pre-order now');
         Utils.setStyle(this, {
-            "font-size": "22px",
-            "text-align": "center",
-            "text-transform": "uppercase",
-            "font-weight": "700",
-            "line-height": "40px",
-            "color": "#FFFFFF",
-            "background-color": "#000000",
-            "border-radius": "4px"
+            'font-size': '22px',
+            'text-align': 'center',
+            'text-transform': 'uppercase',
+            'font-weight': '700',
+            'line-height': '40px',
+            'color': '#FFFFFF',
+            'background-color': '#000000',
+            'border-radius': '4px'
         });
     }
 }
