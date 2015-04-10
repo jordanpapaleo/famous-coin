@@ -6,9 +6,10 @@ import {Card} from './Card';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 import {Timeline} from '../shared/Timeline';
 
-const Easing         = transitions.Easing;
 const GestureHandler = components.GestureHandler;
-const Camera         = components.Camera;
+const Easing         = transitions.Easing;
+const LINEAR         = Easing.getCurve('linear');
+const OUTBACK        = Easing.getCurve('outBack');
 
 export class Frame extends View {
     pre() {
@@ -19,9 +20,6 @@ export class Frame extends View {
         this.size.setAbsolute(320, 568);
         this.mountPoint.set(.5, .5);
         this.align.set(.5, .5);
-
-        this.camera = new Camera(this.dispatch);
-        this.camera.set(Camera.PINHOLE_PROJECTION, 0, 0, 0);
     }
 
     render() {
@@ -209,7 +207,7 @@ export class Frame extends View {
         });
     }
 
-    addPostTimelineEvents() {
+    addCoinSpringEvent() {
         const _this = this;
         const coinCard = _this.cards[_this.cards.length - 1];
         const viewPortCenter = {
@@ -268,22 +266,20 @@ export class Frame extends View {
     }
 
     initTimeline() {
-        const LINEAR = Easing.getCurve('linear');
         const _this = this;
         this.currentTime = 0; //Used in timeline scrubbing
 
-        this.time = {
-            start: 0,
-            step1: 1500, // Card scale apex
-            step2: 2500, // Card scale basin
-            step3: 3500, // Stage one done: Coin card has scaled back to a resting point
-            step4: 4500, // Coin card scale and flip starting
-            step5: 5500, // Coin card scale and flip apex
-            step6: 5750, // Coin card scale and flip almost done
-            step7: 6000, // End state text starts moving in
-            step8: 6500, // Stage two done: Tag line and coin card are moving up and out
-            end: 7000 //
-        };
+        this.time = {};
+        this.time.start = 0;
+        this.time.step1 = this.time.start + 1500; // Card scale apex
+        this.time.step2 = this.time.step1 + 500;  // Card scale basin
+        this.time.step3 = this.time.step2 + 500;  // Stage one done: Coin card has scaled back to a resting point
+        this.time.step4 = this.time.step3 + 1000; // Coin card scale and flip starting
+        this.time.step5 = this.time.step4 + 1000; // Coin card scale and flip apex
+        this.time.step6 = this.time.step5 + 250;  // Coin card scale and flip almost done
+        this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
+        this.time.step8 = this.time.step7 + 500;  // Stage two done: Tag line and coin card are moving up and out
+        this.time.end   = this.time.step8 + 500;  // Finis
 
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerComponent({
@@ -368,12 +364,12 @@ export class Frame extends View {
                 direction: 1,
                 fn: function() {
                     if(i === 0) {
-                        coin.rotation.set(1080 * Math.PI / 180, 720 * Math.PI / 180, 0, {
+                        coin.rotation.set(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
                             curve: 'easeOut',
                             duration: 3000
                         });
                     } else if(i === 1) {
-                        coin.rotation.set(-1440 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
+                        coin.rotation.set(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
                             curve: 'easeOut',
                             duration: 3000
                         });
@@ -382,7 +378,7 @@ export class Frame extends View {
             });
         });
 
-        /*--------------------- COIN ---------------------*/
+        /*--------------------- COIN TEXT ---------------------*/
         this.timeline.registerComponent({
             component: this.coin.position,
             path: [
@@ -445,7 +441,7 @@ export class Frame extends View {
             time: _this.time.end,
             direction: 1,
             fn: function() {
-                _this.addPostTimelineEvents();
+                _this.addCoinSpringEvent();
             }
         });
     }
@@ -542,7 +538,7 @@ export class Frame extends View {
                     [this.time.start, [.5, .5, .5]],
                     [(this.time.step1 / 2), [1, 1, 1]],
                     [this.time.step1, [.5, .5, .5]],
-                    [this.time.step2, [.2, .2, .2]],
+                    [this.time.step2, [.3, .3, .3]],
                     [this.time.step3, [.5, .5, .5]],
                     [this.time.step4, [.62, .62, .62]],
                     [this.time.step5, [.75, .75, .75]]
@@ -550,7 +546,7 @@ export class Frame extends View {
                 timeSegments.cardRotation = [
                     [0, currentRotation],
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
-                    [this.time.step2, [(-1080 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step2, [(-540 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step3, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step4, [(-270 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step5, [(0 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
@@ -565,7 +561,7 @@ export class Frame extends View {
                 timeSegments.cardPosition = [
                     [this.time.start, currentPosition],
                     [(this.time.step1 / 2), [0, 250]],
-                    [this.time.step1, [0, 75]],
+                    [this.time.step1, [0, 75], OUTBACK],
                     [this.time.step3, [0, 75]],
                     [this.time.step4, [0, 300]],
                     [this.time.step5, [0, 200]],
@@ -597,13 +593,5 @@ export class Frame extends View {
         }
 
         this.timeline.set(this.currentTime, { duration });
-    }
-
-    finishTimeline() {
-
-    }
-
-    restartTimeline() {
-
     }
 }
