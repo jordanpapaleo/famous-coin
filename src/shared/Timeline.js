@@ -1,35 +1,29 @@
 import {core, domRenderables, components, transitions} from 'famous';
 
-const Famous         = core.Famous;
-const Size           = components.Size;
-const Easing         = transitions.Easing;
-const Transitionable = transitions.Transitionable;
-var easingCurveLinear = Easing.getCurve('linear');
+const Famous          = core.Famous;
+const Size            = components.Size;
+const Transitionable  = transitions.Transitionable;
+const Curves          = transitions.Curves;
 
 export class Timeline {
-    constructor(options) {
+    constructor(options = {}) {
         this.componentSet = [];
         this.timescale = options.timescale || 1;
         this.currentTime = new Transitionable(0);
         this.callbacks = [];
-        this.direction;
-
-        //for now update on all ticks until clock gets fixed
-        Famous.getClock().update(this);
+        Famous.requestUpdateOnNextTick(this);
     }
 
     registerComponent(animationData) {
         this.componentSet.push(animationData);
     }
 
-    /**
-     * @param callbackData object
-     * { time: 1000, direction: 1 || 0, fn: function() { } }
-     */
-
-    registerCallback(callbackData) {
-        callbackData.direction = callbackData.direction || 1; //what direction to trigger this callback.
-        this.callbacks.push(callbackData);
+    registerCallback(time, direction, fn) {
+        this.callbacks.push({
+            time: time,
+            direction: (direction || 1),  //what direction to trigger this callback.
+            fn: fn
+        });
     }
 
     /**
@@ -39,115 +33,119 @@ export class Timeline {
      */
     /*eslint no-underscore-dangle:0*/
     addKeyframes(keyframeObjs) {
-        var layers = [];
-        var keyframe;
-        var nodeProperty;
-        var id;
-        var i;
-        var j;
-        for (i = 0; i < keyframeObjs.length; i++) {
-            var keyframes = keyframeObjs[i].keyframes;
-            for(j = 0; j < keyframes.length; j++) {
-                keyframe = keyframes[j];
-                nodeProperty = keyframe.shift();
-                id = nodeProperty._dispatch._renderProxy._id;
+        let layers = {};
+
+        for (let i = 0; i < keyframeObjs.length; i++) {
+            let keyframes = keyframeObjs[i].keyframes;
+
+            for(let j = 0; j < keyframes.length; j++) {
+                let keyframe = keyframes[j];
+                let nodeProperty = keyframe.shift();
+                let id = nodeProperty._dispatch._renderProxy._id;
                 keyframe.unshift(keyframeObjs[i].time);
+
                 if (!layers[id]) {
                     layers[id] = {
                         component: nodeProperty,
                         path: []
                     };
                 }
+
                 layers[id].path.push(keyframe);
             }
         }
-        for (id in layers) {
-            this.registerComponent(layers[id]);
-        }
+
+        Object.keys(layers).forEach((id) => this.registerComponent(layers[id]));
     }
 
     set(time, transition, callback) {
-        this.direction = time > this.currentTime.get() ? 1 : -1;
+        this.direction = (time > this.currentTime.get()) ? 1 : -1;
         //comment out no longer updates and stuff for now, race condition in clock.
         if (transition) {
-            // Famous.getClock().update(this);
             this.inTransition = true;
-            this.currentTime.set(time, transition, function() {
-                // Famous.getClock().noLongerUpdate(this);
-                this.update();
+            Famous.requestUpdate(this);
+
+            this.currentTime.set(time, transition, () => {
                 this.inTransition = false;
-                if (callback) {
+                Famous.requestUpdate(this);
+
+                if (callback && callback instanceof Function) {
                     callback();
                 }
-            }.bind(this));
+            });
         } else {
             this.currentTime.set(time);
             this.inTransition = true;
-            this.update();
+            Famous.requestUpdate(this);
             this.inTransition = false;
         }
     }
 
-    update(time) {
-        if (this.inTransition) {
-            var res = [];
-            time = this.currentTime.get() * this.timescale;
+    onUpdate(time) {
+        let res = [];
 
-            for(var i=0; i<this.callbacks.length; i++) {
-                if(this.direction > 0 && this.callbacks[i].direction > 0) {
-                    //forward
-                    if(time >= this.callbacks[i].time) {
-                        this.callbacks[i].fn();
-                        this.callbacks[i].direction = -1; //set to backwards
-                    }
-                } else if(this.direction < 0 && this.callbacks[i].direction < 0) {
-                    if(time <= this.callbacks[i].time) {
-                        this.callbacks[i].fn();
-                        this.callbacks[i].direction = 1; //set to forwards
-                    }
+        //TODO Why pass in time if we just overwrite it
+        time = this.currentTime.get() * this.timescale;
+
+        for(let i = 0; i<this.callbacks.length; i++) {
+            if(this.direction > 0 && this.callbacks[i].direction > 0) {
+                //forward
+                if(time >= this.callbacks[i].time && this.callbacks[i].fn instanceof Function) {
+                    this.callbacks[i].fn();
+                    this.callbacks[i].direction = -1; //set to backwards
+                }
+            } else if(this.direction < 0 && this.callbacks[i].direction < 0){
+                if(time <= this.callbacks[i].time && this.callbacks[i].fn instanceof Function) {
+                    this.callbacks[i].fn();
+                    this.callbacks[i].direction = 1; //set to forwards
                 }
             }
+        }
 
-            for(var i = 0; i < this.componentSet.length; i++) {
-                var animData = this.componentSet[i];
-                for (var j = 0; j < animData.path.length; j++) {
-                    var currStep, nextStep;
+        for (let i = 0; i < this.componentSet.length; i++) {
+            let animData = this.componentSet[i];
 
-                    //forward
-                    if(this.direction) {
-                        currStep = animData.path[j];
-                        nextStep = animData.path[j + 1];
+            for (let j = 0; j < animData.path.length; j++) {
+                let currStep = animData.path[j];
+                let nextStep = animData.path[j + 1];
+
+                //currently mid path, calculate and apply.
+                if (nextStep && currStep[0] <= time && nextStep[0] >= time) {
+                    let percentDone = (time - currStep[0]) / (nextStep[0] - currStep[0]);
+                    let state = currStep[2] ? currStep[2](percentDone) : Curves.linear(percentDone);
+
+                    if (currStep[1] instanceof Array) {
+                        for (let k = 0; k < currStep[1].length; k++) {
+                            res[k] = currStep[1][k] + (nextStep[1][k] - currStep[1][k]) * state;
+                        }
+
+                        if (animData.component instanceof Size) {
+                            animData.component.setAbsolute(...res);
+                        } else {
+                            animData.component.set(...res);
+                        }
                     } else {
-                        currStep = animData.path[j + 1];
-                        nextStep = animData.path[j];
+                        animData.component.set(currStep[1] + (nextStep[1] - currStep[1]) * state);
                     }
+                }
 
-                    //currently mid path, calculate and apply.
-                    if (nextStep && currStep[0] <= time && nextStep[0] >= time) {
-                        var percentDone = (time - currStep[0]) / (nextStep[0] - currStep[0]);
-                        var state = currStep[2] ? currStep[2](percentDone) : easingCurveLinear(percentDone);
-
-                        if (currStep[1] instanceof Array) {
-                            for (var k = 0; k < currStep[1].length; k++) {
-                                res[k] = currStep[1][k] + (nextStep[1][k] - currStep[1][k]) * state;
-                            }
-                            if (animData.component instanceof Size) animData.component.setAbsolute.apply(animData.component, res);
-                            else animData.component.set.apply(animData.component, res);
+                //we are passed last step, set object to final state.
+                if (!nextStep && currStep[0] < time) {
+                    if (currStep[1] instanceof Array) {
+                        if (animData.component instanceof Size) {
+                            animData.component.setAbsolute(...res);
                         } else {
-                            animData.component.set(currStep[1] + (nextStep[1] - currStep[1]) * state);
+                            animData.component.set(...currStep[1]);
                         }
-                    }
-                    //we are passed last step, set object to final state.
-                    if(!nextStep && currStep[0] < time) {
-                        if(currStep[1] instanceof Array) {
-                            if (animData.component instanceof Size) animData.component.setAbsolute.apply(animData.component, res);
-                            else animData.component.set.apply(animData.component, currStep[1]);
-                        } else {
-                            animData.component.set(currStep[1]);
-                        }
+                    } else {
+                        animData.component.set(currStep[1]);
                     }
                 }
             }
+        }
+
+        if (this.inTransition) {
+            Famous.requestUpdateOnNextTick(this);
         }
     }
 }
@@ -175,7 +173,7 @@ export class Keyframe {
      * @return  {Keyframe}    A keyframe for use with the {@link Timeline}.
      */
     static add(nodeProperty, values, easingFunction) {
-        var keyframe = [nodeProperty];
+        let keyframe = [nodeProperty];
         keyframe.push(values);
         if (easingFunction) {
             keyframe.push(easingFunction);

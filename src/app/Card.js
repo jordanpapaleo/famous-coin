@@ -1,67 +1,61 @@
-import {core, domRenderables, components, transitions} from 'famous';
-import {View} from '../shared/View';
-import Utils from '../utils/Utilities';
-import {Timeline} from '../shared/Timeline';
+import {transitions} from 'famous';
+import {DomView} from '../shared/DomView';
 
-export class Card extends View {
+const Curves = transitions.Curves;
+
+export class Card extends DomView {
     setProperties() {
-        this.size.setAbsolute(350, 220);
+        this.setSize(['absolute', 350], ['absolute', 220]);
         this.mountPoint.set(.5, 0);
         this.align.set(.5, 0);
-        this.origin.set(0.5, 0.5, 0.5);
-        this.scale.setX(.5);
-        this.scale.setY(.5);
-        this.scale.setZ(.5);
-
-        this.position.setZ(this.model.i * 350);
-        this.position.setX(-300);
-        this.position.setY(300);
+        this.origin.set(.5, .5);
+        this.scale.set(.5, .5, .5);
+        this.position.set(-300, 300, this.model.i * 350);
     }
 
     render() {
         this.addCardBack();
         this.addCardFront();
-
         this.loadCards();
     }
 
     addCardFront() {
-        let cardFront = new View({
+        let cardFront = new DomView({
             tagName: 'img',
             node: this.node.addChild(),
             model: { imgPath: this.model.front }
         });
 
-        Utils.setStyle(cardFront, {
+        cardFront.setStyle({
             'backface-visibility': 'hidden'
         });
 
         cardFront.size.setProportional(1, 1);
         cardFront.el.addClass('card-img-front');
-        cardFront.el.attribute('src', cardFront.model.imgPath);
+        cardFront.el.setAttribute('src', cardFront.model.imgPath);
     }
 
     addCardBack() {
-        let cardBack = new View({
+        let cardBack = new DomView({
             tagName: 'img',
             node: this.node.addChild(),
             model: { imgPath: this.model.back }
         });
 
-        Utils.setStyle(cardBack, {
+        cardBack.setStyle({
             'backface-visibility': 'visible'
         });
 
         cardBack.size.setProportional(1, 1);
         cardBack.el.addClass('card-img-back');
-        cardBack.el.attribute('src', cardBack.model.imgPath);
+        cardBack.el.setAttribute('src', cardBack.model.imgPath);
     }
 
     loadCards() {
         const _this = this;
 
         this.position.setX(0, {
-            curve: 'easeInOut',
+            curve: Curves.easeInOut,
             duration: 650
         }, function() {
             let rotation = 0;

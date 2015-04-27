@@ -6,20 +6,23 @@
   "scripts": {
     "build-main": "browserify src/main.js -t [ babelify --playground --experimental ] | uglifyjs > public/main.bundle.js",
     "watch-main": "watchify src/main.js -o public/main.bundle.js -d -v -t [ babelify --playground --experimental ]",
-    "start": "npm run build && serve public/ -p 1337",
-    "start-dev": "npm run watch & serve public/ -p 1337",
+    "build-styles": "catw -c 'lessc -' 'src/styles/*.less' > public/main.bundle.css",
+    "watch-styles": "catw -c 'lessc -' 'src/styles/*.less' -o public/main.bundle.css -v",
+    "build": "npm run build-main && npm run build-styles",
+    "watch": "npm run watch-main && npm run watch-styles",
     "test": "npm run lint -s && npm run build",
-    "build": "npm run build-main",
-    "watch": "npm run watch-main",
     "lint-eslint": "eslint src/",
     "lint-jscs": "jscs --esnext src/",
-    "lint": "npm run lint-eslint --force && npm run lint-jscs --force"
+    "lint": "npm run lint-eslint --force && npm run lint-jscs --force",
+    "start-dev": "npm run watch & serve public/ -p 1337",
+    "start": "npm run build && serve public/ -p 1337"
   },
   "devDependencies": {
     "babel-eslint": "^2.0.2",
     "babelify": "^5.0.3",
     "browser-sync": "^2.0.0-rc10",
     "browserify": "^8.0.3",
+    "catw": "^1.0.0",
     "eslint": "^0.12.0",
     "jscs": "^1.7.3",
     "serve": "^1.4.0",
@@ -30,6 +33,8 @@
   "license": "All rights reserved",
   "dependencies": {
     "brfs": "^1.1.1",
-    "famous": "git+ssh://git@github.famo.us/platform/oasis#v0.1.0"
+    "famous": "git+ssh://git@github.famo.us/platform/famous#20150424",
+    "famous-creative": "git+ssh://git@github.famo.us:creative/famous-creative#0.1.0",
+    "less": "^2.5.0"
   }
 }

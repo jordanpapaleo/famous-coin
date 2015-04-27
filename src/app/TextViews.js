@@ -1,17 +1,15 @@
-import {core, domRenderables, components} from 'famous';
-import {View} from '../shared/View';
-import Utils from '../utils/Utilities';
+import {DomView} from '../shared/DomView';
 
-class TopText extends View {
+class TopText extends DomView {
     setProperties() {
-        this.size.setAbsolute(318, 200);
+        this.setSize(['absolute', 318], ['absolute', 200]);
         this.opacity.set(1);
         this.position.setY(33);
     }
 
     render() {
-        this.el.content(this.model);
-        Utils.setStyle(this, {
+        this.el.setContent(this.model);
+        this.setStyle({
             'font-size': '60px',
             'text-align': 'center',
             'font-weight': '200'
@@ -19,16 +17,16 @@ class TopText extends View {
     }
 }
 
-class TagLine extends View {
+class TagLine extends DomView {
     setProperties() {
-        this.size.setAbsolute(318, 100);
+        this.setSize(['absolute', 318], ['absolute', 100]);
         this.opacity.set(1);
         this.position.setY(-100);
     }
 
     render() {
-        this.el.content('All your cards<br><strong>one coin</strong>');
-        Utils.setStyle(this, {
+        this.el.setContent('All your cards<br><strong>one coin</strong>');
+        this.setStyle({
             'font-size': '50px',
             'text-align': 'center',
             'line-height': '1em',
@@ -37,16 +35,16 @@ class TagLine extends View {
     }
 }
 
-class Coin extends View {
+class Coin extends DomView {
     setProperties() {
-        this.size.setAbsolute(318, 50);
+        this.setSize(['absolute', 318], ['absolute', 50]);
         this.opacity.set(1);
         this.position.setY(780);
     }
 
     render() {
-        this.el.content('coin');
-        Utils.setStyle(this, {
+        this.el.setContent('coin');
+        this.setStyle({
             'font-size': '48px',
             'text-align': 'center',
             'line-height': '1em',
@@ -55,16 +53,16 @@ class Coin extends View {
     }
 }
 
-class GetYours extends View {
+class GetYours extends DomView {
     setProperties() {
-        this.size.setAbsolute(318, 50);
+        this.setSize(['absolute', 318], ['absolute', 50]);
         this.opacity.set(1);
         this.position.setY(880);
     }
 
     render() {
-        this.el.content('Get yours first');
-        Utils.setStyle(this, {
+        this.el.setContent('Get yours first');
+        this.setStyle({
             'font-size': '42px',
             'text-align': 'center',
             'line-height': '1em',
@@ -73,18 +71,18 @@ class GetYours extends View {
     }
 }
 
-class PreOrder extends View {
+class PreOrder extends DomView {
     setProperties() {
         this.align.set(.5, 0);
         this.mountPoint.set(.5, 0);
-        this.size.setAbsolute(220, 40);
         this.opacity.set(1);
+        this.setSize(['absolute', 220], ['absolute', 40]);
         this.position.setY(1000);
     }
 
     render() {
-        this.el.content('Pre-order now');
-        Utils.setStyle(this, {
+        this.el.setContent('Pre-order now');
+        this.setStyle({
             'font-size': '22px',
             'text-align': 'center',
             'text-transform': 'uppercase',

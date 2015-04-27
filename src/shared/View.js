@@ -1,69 +1,67 @@
-import {components, domRenderables} from 'famous';
+import {components, core} from 'famous';
 
 export class View {
     constructor(options) {
         options = options || {};
-        this.node = options.node;
-        this.model = options.model;
-        this.dispatch = this.node.getDispatch();
+        this.node       = options.node;
+        this.model      = options.model || {};
+        this.align      = new components.Align(this.node);
+        this.mountPoint = new components.MountPoint(this.node);
+        this.origin     = new components.Origin(this.node);
+        this.opacity    = new components.Opacity(this.node);
+        this.position   = new components.Position(this.node);
+        this.rotation   = new components.Rotation(this.node);
+        this.scale      = new components.Scale(this.node);
+        this.size       = new components.Size(this.node);
 
-        this.align = new components.Align(this.dispatch);
-        this.mountPoint = new components.MountPoint(this.dispatch);
-        this.opacity = new components.Opacity(this.dispatch);
-        this.origin = new components.Origin(this.dispatch);
-        this.position = new components.Position(this.dispatch);
-        this.rotation = new components.Rotation(this.dispatch);
-        this.scale = new components.Scale(this.dispatch);
-        this.size = new components.Size(this.dispatch);
-        this.el = new domRenderables.HTMLElement(this.dispatch, options.tagName);
-
-        this.pre();
         this.setProperties();
-        this.render();
-        this.setEvents();
-        this.post();
     }
 
-    pre() {
-        //Used to be a pre launching point
-    }
+    // Takes 1 - 3 arrays
+    // ex: this.setSize(['relative', 1], ['relative', .5]);
+    setSize() {
+        let sizeMode = [];
+        let absoluteSizes = [];
+        let proportionalSizes = [];
+        let renderSizes = [];
 
-    render() {
-        // Each class will implement differently
+        for(let i = 0, j = arguments.length; i < j; i++) {
+            if(!i instanceof Array) {
+                break;
+            }
+
+            let sizing = arguments[i];
+
+            switch (sizing[0]) {
+                case 'relative':
+                    sizeMode.push(core.Node.RELATIVE_SIZE);
+                    proportionalSizes.push(sizing[1]);
+                    absoluteSizes.push(undefined);
+                    renderSizes.push(undefined);
+                    break;
+                case 'absolute':
+                    sizeMode.push(core.Node.ABSOLUTE_SIZE);
+                    proportionalSizes.push(undefined);
+                    absoluteSizes.push(sizing[1]);
+                    renderSizes.push(undefined);
+                    break;
+                case 'render':
+                    sizeMode.push(core.Node.RENDER_SIZE);
+                    proportionalSizes.push(undefined);
+                    absoluteSizes.push(undefined);
+                    renderSizes.push(sizing[1]);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        this.size.setMode.apply(this.size, sizeMode);
+        this.size.setProportional.apply(this.size, proportionalSizes);
+        this.size.setAbsolute.apply(this.size, absoluteSizes);
     }
 
     setProperties() {
-        // Each class will implement differently
-    }
-
-    setEvents() {
-        // Each class will implement differently
-    }
-
-    post() {
-        //Used to be a post launching point
-    }
-
-    onCustomEvent(evName, fn) {
-        if(!this.eventHandler) this.eventHandler = new EventHandler(this.dispatch);
-        this.eventHandler.on(evName, fn);
-    }
-
-    onDomEvent(evName, methods, properties, fn) {
-        var i;
-        if(!this.el) this.el = new HTMLElement(this.dispatch);
-        if(properties instanceof Array) {
-            if(!(evName instanceof Array)) evName = [evName];
-            for(i = 0; i < evName.length; i++) {
-                this.el.on(evName[i], methods, properties);
-                this.dispatch.registerTargetedEvent(evName[i], fn);
-            }
-        } else {
-            if(!(evName instanceof Array)) evName = [evName];
-            for(i = 0; i < evName.length; i++) {
-                this.el.on(evName[i], methods);
-                this.dispatch.registerTargetedEvent(evName[i], properties);
-            }
-        }
+        //Override
     }
 }
