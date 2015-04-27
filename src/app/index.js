@@ -10,32 +10,15 @@ const GestureHandler = components.GestureHandler;
 const Curves         = transitions.Curves;
 //const Camera         = components.Camera;
 
-
 export class App extends DomView {
     constructor(options) {
         super(options);
 
+
+        console.log('timeline',this.timeline);
+
         /*this.camera = new Camera(this.dispatch);
         this.camera.set(Camera.PINHOLE_PROJECTION, 10000, 0, 0);*/
-
-
-        //GLOBAL EVENTS
-        /*this.eventHandler = new components.EventHandler(this.node);
-
-        this.eventHandler.on('test', function(message) {
-            console.log('EVENT HANDLER', message);
-        });*/
-
-
-
-
-        /*this.onGlobalEvent('test', function(message) {
-            console.log('onGlobalEvent', message);
-        });*/
-
-        this.on(['click'], function(evt) {
-            console.log('evt',evt);
-        });
 
         /*this.node.addComponent({
             onReceive: function(evtName, message) {
@@ -45,22 +28,7 @@ export class App extends DomView {
             }
         });*/
 
-        /*this.el.on('test', function(message) {
-            console.log('EL', message);
-        });*/
-
-
-        /*this.el.onAddUIEvent('click');
-        this.el.on('click', function() {
-            console.log('clicked');
-        });*/
-
-        //this.node.emit('test', ['my', 'message']);
-
-
-        //this.setEvents();
-
-        this.timeline = new Timeline({ timescale: 1 });
+        this.setEvents();
     }
 
     setProperties() {
@@ -85,7 +53,7 @@ export class App extends DomView {
         this.renderGetYours();
         this.renderPreOrder();
 
-        //this.initTimeline();
+        this.initTimeline();
     }
 
     renderBlueScreen() {
@@ -216,22 +184,20 @@ export class App extends DomView {
         let isScrubbing = false;
         let hasFinished = false;
 
-
-
-        this.onDomEvent2('mousedown', ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+        this.on('mousedown', function(e) {
             if(!hasFinished) {
-                _this.dispatch.emit('dragging', 'start');
+                _this.emit('dragging', 'start');
                 isScrubbing = true;
             }
         });
 
-        this.onDomEvent2('mousemove', ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+        this.on('mousemove', function(e) {
             if(isScrubbing) {
                 _this.scrubTimeline(e);
             }
         });
 
-        this.onDomEvent2(['mouseup'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+        this.on('mouseup', function(e) {
             isScrubbing = false;
             let duration;
 
@@ -245,7 +211,7 @@ export class App extends DomView {
                 } else {  //RESET
                     duration = _this.currentTime;
 
-                    _this.dispatch.emit('resetApp', { duration });
+                    _this.emit('resetApp', { duration });
                     _this.currentTime = 0;
                     _this.timeline.set(_this.currentTime, { duration });
                 }
@@ -272,7 +238,7 @@ export class App extends DomView {
             y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
         };
 
-        this.onDomEvent(['mouseleave', 'mouseout'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+        this.on(['mouseleave', 'mouseout'], function(e) {
             coinCard.rotation.setY(0, {
                 curve: Curves.spring,
                 duration: 1000
@@ -284,7 +250,7 @@ export class App extends DomView {
             });
         });
 
-        this.onDomEvent(['mousemove'], ['preventDefault'], ['offsetX', 'offsetY'], function(e) {
+        this.on('mousemove', function(e) {
             let offset = {
                 x: e.x - cardCenter.x,
                 y: e.y - cardCenter.y
@@ -312,6 +278,8 @@ export class App extends DomView {
     }
 
     initTimeline() {
+        this.timeline = new Timeline({ timescale: 1 });
+
         const _this = this;
         this.currentTime = 0; //Used in timeline scrubbing
 
@@ -483,6 +451,9 @@ export class App extends DomView {
     }
 
     getCardTimeSegments(card) {
+        console.info(card);
+        console.warn(card.model);
+
         let currentPosition = [card.model.position.x, card.model.position.y, card.model.position.z];
         let currentRotation = [card.model.rotation.x, card.model.rotation.y, card.model.rotation.z];
         let timeSegments = {

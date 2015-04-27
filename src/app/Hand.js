@@ -7,7 +7,7 @@ export class Hand extends DomView {
     constructor(options) {
         super(options);
 
-        //this.setEvents();
+        this.setEvents();
         this.startAnimation();
     }
 
@@ -89,13 +89,13 @@ export class Hand extends DomView {
         const _this = this;
         this.eventHandler = new components.EventHandler(this.node);
 
-        this.eventHandler.on('dragging', function(message) {
+        this.on('dragging', function(message) {
             if(message === 'start') {
                 _this.stopAnimation();
             }
         });
 
-        this.eventHandler.on('resetApp', function(message) {
+        this.on('resetApp', function(message) {
             _this.restartAnimation();
         });
     }
