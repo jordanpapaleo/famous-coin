@@ -11,7 +11,7 @@ export class Timeline {
         this.timescale = options.timescale || 1;
         this.currentTime = new Transitionable(0);
         this.callbacks = [];
-        Famous.requestUpdateOnNextTick(this);
+        //Famous.requestUpdateOnNextTick(this);
     }
 
     registerComponent(animationData) {

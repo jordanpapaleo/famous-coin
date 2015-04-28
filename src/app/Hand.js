@@ -7,6 +7,8 @@ export class Hand extends DomView {
     constructor(options) {
         super(options);
 
+        this.el.setAttribute('src', this.model.imgPath);
+
         this.setEvents();
         this.startAnimation();
     }
@@ -19,8 +21,19 @@ export class Hand extends DomView {
         this.align.set(.5, 0);
     }
 
-    render() {
-        this.el.setAttribute('src', this.model.imgPath);
+    setEvents() {
+        const _this = this;
+        this.eventHandler = new components.EventHandler(this.node);
+
+        this.on('dragging', function(message) {
+            if(message === 'start') {
+                _this.stopAnimation();
+            }
+        });
+
+        this.on('resetApp', function(message) {
+            _this.restartAnimation();
+        });
     }
 
     startAnimation() {
@@ -82,21 +95,6 @@ export class Hand extends DomView {
                     }, 200);
                 });
             }, 900);
-        });
-    }
-
-    setEvents() {
-        const _this = this;
-        this.eventHandler = new components.EventHandler(this.node);
-
-        this.on('dragging', function(message) {
-            if(message === 'start') {
-                _this.stopAnimation();
-            }
-        });
-
-        this.on('resetApp', function(message) {
-            _this.restartAnimation();
         });
     }
 }

@@ -54,55 +54,57 @@ export class Card extends DomView {
     loadCards() {
         const _this = this;
 
-        this.position.setX(0, {
-            curve: Curves.easeInOut,
-            duration: 650
-        }, function() {
-            let rotation = 0;
-            let position = { x: 0, y: 300 };
+        this.model.rotation = {
+            x: 0,
+            y: 0,
+            z: 0
+        };
 
-            switch(_this.model.i) {
-                case 0:
-                    rotation = (-9 * Math.PI) / 180;
-                    position.x = 30;
-                    position.y = 250;
-                    break;
-                case 1:
-                    rotation = (.5 * Math.PI) / 180;
-                    position.y = 312;
-                    position.x = 20;
-                    break;
-                case 2:
-                    rotation = (30 * Math.PI) / 180;
-                    position.x = -20;
-                    position.y = 355;
-                    break;
-                case 3:
-                    rotation = (-23 * Math.PI) / 180;
-                    position.y = 245;
-                    position.x = -30;
-                    break;
-                default:
-                    break;
-            }
+        this.model.position = {
+            x: 0,
+            y: 300,
+            z: 0
+        };
 
-            _this.model.rotation = {
-                x: 0,
-                y: 0,
-                z: rotation
-            };
+        switch(this.model.i) {
+            case 0:
+                this.model.rotation.z = (-9 * Math.PI) / 180;
+                this.model.position.x = 30;
+                this.model.position.y = 250;
+                break;
+            case 1:
+                this.model.rotation.z = (.5 * Math.PI) / 180;
+                this.model.position.y = 312;
+                this.model.position.x = 20;
+                break;
+            case 2:
+                this.model.rotation.z = (30 * Math.PI) / 180;
+                this.model.position.x = -20;
+                this.model. position.y = 355;
+                break;
+            case 3:
+                this.model.rotation.z = (-23 * Math.PI) / 180;
+                this.model.position.y = 245;
+                this.model.position.x = -30;
+                break;
+            default:
+                break;
+        }
 
-            _this.model.position = position;
-            _this.model.position.z = _this.position.getZ();
-
-            //TODO BUG: Remove timeout once callback is fixed
-            setTimeout(function() {
-                const options = { curve: 'outBack', duration: 500 };
-                _this.rotation.setZ(rotation, options);
-
-                _this.position.setX(position.x, options);
-                _this.position.setY(position.y, options);
-            }, 700);
-        });
+        // I want a slight delay after the app loads
+        setTimeout(function() {
+            _this.position.setX(0, {
+                curve: Curves.easeInOut,
+                duration: 650
+            }, function() {
+                // I want a slight delay after the animation is done
+                setTimeout(function() {
+                    const options = { curve: 'outBack', duration: 500 };
+                    _this.rotation.setZ(_this.model.rotation.z, options);
+                    _this.position.setX(_this.model.position.x, options);
+                    _this.position.setY(_this.model.position.y, options);
+                }, 75);
+            });
+        }, 250);
     }
 }

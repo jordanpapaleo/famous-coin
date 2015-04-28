@@ -17,6 +17,8 @@ export class View {
         this.setProperties();
     }
 
+    setProperties() {  }
+
     emit(evt, payload) {
         this.node.emit(evt, payload);
     }
@@ -63,9 +65,5 @@ export class View {
         this.size.setMode.apply(this.size, sizeMode);
         this.size.setProportional.apply(this.size, proportionalSizes);
         this.size.setAbsolute.apply(this.size, absoluteSizes);
-    }
-
-    setProperties() {
-        //Override
     }
 }

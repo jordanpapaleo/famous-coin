@@ -8,33 +8,17 @@ import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = components.GestureHandler;
 const Curves         = transitions.Curves;
-//const Camera         = components.Camera;
+const Camera         = components.Camera;
 
 export class App extends DomView {
-    constructor(options) {
-        super(options);
-
-
-        console.log('timeline',this.timeline);
-
-        /*this.camera = new Camera(this.dispatch);
-        this.camera.set(Camera.PINHOLE_PROJECTION, 10000, 0, 0);*/
-
-        /*this.node.addComponent({
-            onReceive: function(evtName, message) {
-                if(evtName === 'test') {
-                    console.log('COMPONENT', evtName, message);
-                }
-            }
-        });*/
-
-        this.setEvents();
-    }
-
     setProperties() {
         this.setSize(['absolute', 320], ['absolute', 568]);
         this.mountPoint.set(.5, .5);
         this.align.set(.5, .5);
+    }
+
+    preRender() {
+        this.timeline = new Timeline({ timescale: 1 });
     }
 
     render() {
@@ -52,7 +36,10 @@ export class App extends DomView {
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
+    }
 
+    postRender() {
+        this.setEvents();
         this.initTimeline();
     }
 
@@ -202,18 +189,18 @@ export class App extends DomView {
             let duration;
 
             setTimeout(function () {
-                if(_this.currentTime > (_this.time.step1 / 2)) { //FINISH
+                if(_this.currentTime > (_this.time.step1 / 2)) { // FINISH the time line
                     duration = _this.time.end - _this.currentTime;
 
                     _this.currentTime = _this.time.end;
-                    _this.timeline.set(_this.currentTime, { duration });
+                    //_this.timeline.set(_this.currentTime, { duration });
                     hasFinished = true;
-                } else {  //RESET
+                } else {  //RESET the time line
                     duration = _this.currentTime;
 
                     _this.emit('resetApp', { duration });
                     _this.currentTime = 0;
-                    _this.timeline.set(_this.currentTime, { duration });
+                    //_this.timeline.set(_this.currentTime, { duration });
                 }
             }, 0);
         });
@@ -278,8 +265,6 @@ export class App extends DomView {
     }
 
     initTimeline() {
-        this.timeline = new Timeline({ timescale: 1 });
-
         const _this = this;
         this.currentTime = 0; //Used in timeline scrubbing
 
@@ -451,9 +436,6 @@ export class App extends DomView {
     }
 
     getCardTimeSegments(card) {
-        console.info(card);
-        console.warn(card.model);
-
         let currentPosition = [card.model.position.x, card.model.position.y, card.model.position.z];
         let currentRotation = [card.model.rotation.x, card.model.rotation.y, card.model.rotation.z];
         let timeSegments = {
@@ -585,7 +567,7 @@ export class App extends DomView {
         let duration = 0;
 
         // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
-        // The negative of the number is required bc the values are oposite of the desired movement
+        // The negative of the number is required bc the values are opposite of the desired movement
         if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
             this.currentTime += e.movementY * -4;
         }

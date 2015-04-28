@@ -1,13 +1,9 @@
 import {DomView} from '../shared/DomView';
 
 class TopText extends DomView {
-    setProperties() {
-        this.setSize(['absolute', 318], ['absolute', 200]);
-        this.opacity.set(1);
-        this.position.setY(33);
-    }
+    constructor(options) {
+        super(options);
 
-    render() {
         this.el.setContent(this.model);
         this.setStyle({
             'font-size': '60px',
@@ -15,16 +11,18 @@ class TopText extends DomView {
             'font-weight': '200'
         });
     }
+
+    setProperties() {
+        this.setSize(['absolute', 318], ['absolute', 200]);
+        this.opacity.set(1);
+        this.position.setY(33);
+    }
 }
 
 class TagLine extends DomView {
-    setProperties() {
-        this.setSize(['absolute', 318], ['absolute', 100]);
-        this.opacity.set(1);
-        this.position.setY(-100);
-    }
+    constructor(options) {
+        super(options);
 
-    render() {
         this.el.setContent('All your cards<br><strong>one coin</strong>');
         this.setStyle({
             'font-size': '50px',
@@ -33,16 +31,18 @@ class TagLine extends DomView {
             'color': '#FFFFFF'
         });
     }
+
+    setProperties() {
+        this.setSize(['absolute', 318], ['absolute', 100]);
+        this.opacity.set(1);
+        this.position.setY(-100);
+    }
 }
 
 class Coin extends DomView {
-    setProperties() {
-        this.setSize(['absolute', 318], ['absolute', 50]);
-        this.opacity.set(1);
-        this.position.setY(780);
-    }
+    constructor(options) {
+        super(options);
 
-    render() {
         this.el.setContent('coin');
         this.setStyle({
             'font-size': '48px',
@@ -51,16 +51,18 @@ class Coin extends DomView {
             'color': '#000000'
         });
     }
-}
 
-class GetYours extends DomView {
     setProperties() {
         this.setSize(['absolute', 318], ['absolute', 50]);
         this.opacity.set(1);
-        this.position.setY(880);
+        this.position.setY(780);
     }
+}
 
-    render() {
+class GetYours extends DomView {
+    constructor(options) {
+        super(options);
+
         this.el.setContent('Get yours first');
         this.setStyle({
             'font-size': '42px',
@@ -69,18 +71,18 @@ class GetYours extends DomView {
             'color': '#FFFFFF'
         });
     }
+
+    setProperties() {
+        this.setSize(['absolute', 318], ['absolute', 50]);
+        this.opacity.set(1);
+        this.position.setY(880);
+    }
 }
 
 class PreOrder extends DomView {
-    setProperties() {
-        this.align.set(.5, 0);
-        this.mountPoint.set(.5, 0);
-        this.opacity.set(1);
-        this.setSize(['absolute', 220], ['absolute', 40]);
-        this.position.setY(1000);
-    }
+    constructor(options) {
+        super(options);
 
-    render() {
         this.el.setContent('Pre-order now');
         this.setStyle({
             'font-size': '22px',
@@ -92,6 +94,14 @@ class PreOrder extends DomView {
             'background-color': '#000000',
             'border-radius': '4px'
         });
+    }
+
+    setProperties() {
+        this.align.set(.5, 0);
+        this.mountPoint.set(.5, 0);
+        this.opacity.set(1);
+        this.setSize(['absolute', 220], ['absolute', 40]);
+        this.position.setY(1000);
     }
 }
 
