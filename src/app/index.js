@@ -46,14 +46,15 @@ export class App extends DomView {
     renderBlueScreen() {
         this.blueScreen = new DomView({
             node: this.node.addChild(),
-            model: {
-                styles: {
-                    'background-color': 'rgb(22, 139, 221)'
-                }
-            }
+            model: {}
         });
 
-        this.setSize(['absolute', 320], ['absolute', 580]);
+        this.setStyle({
+            'background-color': 'rgb(22, 139, 221)'
+        });
+
+        this.blueScreen.el.addClass('blue-screen');
+        this.blueScreen.setSize(['relative', 1], ['relative', 1]);
         this.blueScreen.align.set(0, 0, 0);
         this.blueScreen.position.setY(580);
         this.blueScreen.position.setZ(-1000);
@@ -272,9 +273,10 @@ export class App extends DomView {
         });
 
         this.on('mousemove', function(e) {
+
             let offset = {
-                x: e.x - cardCenter.x,
-                y: e.y - cardCenter.y
+                x: e.clientX - cardCenter.x,
+                y: e.clientY - cardCenter.y
             };
 
             let maxOffsetX = 145;
@@ -385,21 +387,17 @@ export class App extends DomView {
                 ]
             });
 
-            _this.timeline.registerCallback({
-                time: _this.time.step7,
-                direction: 1,
-                fn: function() {
-                    if(i === 0) {
-                        coin.rotation.set(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
-                            curve: Curves.easeOut,
-                            duration: 3000
-                        });
-                    } else if(i === 1) {
-                        coin.rotation.set(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
-                            curve:  Curves.easeOut,
-                            duration: 3000
-                        });
-                    }
+            _this.timeline.registerCallback( _this.time.step7, 1, function() {
+                if(i === 0) {
+                    coin.rotation.set(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
+                        curve: Curves.easeOut,
+                        duration: 3000
+                    });
+                } else if(i === 1) {
+                    coin.rotation.set(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
+                        curve:  Curves.easeOut,
+                        duration: 3000
+                    });
                 }
             });
         });
@@ -460,12 +458,8 @@ export class App extends DomView {
         });
 
         /*--------------------- APP ---------------------*/
-        this.timeline.registerCallback({
-            time: _this.time.end,
-            direction: 1,
-            fn: function() {
-                _this.addCoinSpringEvent();
-            }
+        this.timeline.registerCallback(_this.time.end, 1, function() {
+            _this.addCoinSpringEvent();
         });
     }
 
@@ -613,8 +607,6 @@ export class App extends DomView {
         if(this.currentTime > this.time.end) {
             this.currentTime = this.time.end;
         }
-
-        console.log('CurrentTime',this.currentTime, duration);
 
         this.timeline.set(this.currentTime, { duration });
     }
