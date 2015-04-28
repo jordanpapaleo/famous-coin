@@ -180,30 +180,64 @@ export class App extends DomView {
 
         this.on('mousemove', function(e) {
             if(isScrubbing) {
-                _this.scrubTimeline(e);
+                _this.mouseMovement = {x: e.clientX, y: e.clientY};
+                _this.scrubTimeline(_this.mouseMovement.movement);
             }
         });
 
         this.on('mouseup', function(e) {
             isScrubbing = false;
             let duration;
+            this.mouseMovement = null;
 
             setTimeout(function () {
                 if(_this.currentTime > (_this.time.step1 / 2)) { // FINISH the time line
                     duration = _this.time.end - _this.currentTime;
 
                     _this.currentTime = _this.time.end;
-                    //_this.timeline.set(_this.currentTime, { duration });
+                    _this.timeline.set(_this.currentTime, { duration });
                     hasFinished = true;
                 } else {  //RESET the time line
                     duration = _this.currentTime;
 
                     _this.emit('resetApp', { duration });
                     _this.currentTime = 0;
-                    //_this.timeline.set(_this.currentTime, { duration });
+                    _this.timeline.set(_this.currentTime, { duration });
                 }
             }, 0);
         });
+    }
+
+    set mouseMovement(position) {
+        if(!position) {
+            delete this.mouseProperties;
+        } else if(!this.mouseProperties) {
+            this.mouseProperties = {
+                _lastPosition: position,
+                movement: {
+                    x: 0,
+                    y: 0
+                }
+            };
+        } else {
+            this.mouseProperties.movement.x = this.mouseProperties._lastPosition.x - position.x;
+            this.mouseProperties.movement.y = this.mouseProperties._lastPosition.y - position.y;
+            this.mouseProperties._lastPosition = position;
+        }
+    }
+
+    get mouseMovement() {
+        if(!this.mouseProperties) {
+            this.mouseProperties = {
+                _lastPosition: undefined,
+                movement: {
+                    x: undefined,
+                    y: undefined
+                }
+            }
+        }
+
+        return this.mouseProperties;
     }
 
     addCoinSpringEvent() {
@@ -563,13 +597,12 @@ export class App extends DomView {
         return timeSegments;
     }
 
-    scrubTimeline(e) {
+    scrubTimeline(mouseMovement) {
         let duration = 0;
 
         // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
-        // The negative of the number is required bc the values are opposite of the desired movement
         if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
-            this.currentTime += e.movementY * -4;
+            this.currentTime += mouseMovement.y * 4;
         }
 
         //The previous math can leave values that are outside of the working value range
@@ -581,9 +614,12 @@ export class App extends DomView {
             this.currentTime = this.time.end;
         }
 
+        console.log('CurrentTime',this.currentTime, duration);
+
         this.timeline.set(this.currentTime, { duration });
     }
 }
+
 
 const root = core.Famous.createContext('body');
 
