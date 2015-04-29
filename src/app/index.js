@@ -49,15 +49,14 @@ export class App extends DomView {
             model: {}
         });
 
-        this.setStyle({
+        this.blueScreen.setStyle({
             'background-color': 'rgb(22, 139, 221)'
         });
 
         this.blueScreen.el.addClass('blue-screen');
         this.blueScreen.setSize(['relative', 1], ['relative', 1]);
         this.blueScreen.align.set(0, 0, 0);
-        this.blueScreen.position.setY(580);
-        this.blueScreen.position.setZ(-1000);
+        this.blueScreen.position.set(0, 580, -1000);
     }
 
     renderTopText() {
@@ -322,7 +321,7 @@ export class App extends DomView {
             path: [
                 [this.time.start, [0, 580]],
                 [this.time.step3, [0, 580]],
-                [this.time.step5, [0, -6]]
+                [this.time.step5, [0, 0]]
             ]
         });
 
