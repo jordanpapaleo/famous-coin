@@ -33,7 +33,7 @@
   "license": "All rights reserved",
   "dependencies": {
     "brfs": "^1.1.1",
-    "famous": "git+ssh://git@github.famo.us/platform/famous#20150424",
+    "famous": "git+ssh://git@github.famo.us/platform/famous#20150429",
     "famous-creative": "git+ssh://git@github.famo.us:creative/famous-creative#0.1.0",
     "less": "^2.5.0"
   }

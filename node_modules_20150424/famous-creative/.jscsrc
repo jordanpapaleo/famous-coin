@@ -1,0 +1,23 @@
+{
+    "requireCurlyBraces": ["do", "try", "catch"],
+    "requireSpaceAfterKeywords": ["else", "return", "try", "catch"],
+    "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
+    "disallowKeywords": ["with"],
+    "disallowMultipleLineBreaks": true,
+    "requireBlocksOnNewline": true,
+    "disallowMixedSpacesAndTabs": true,
+    "disallowTrailingWhitespace": true,
+    "requireLineFeedAtFileEnd": true,
+    "requireSpacesInFunctionExpression": {
+        "beforeOpeningCurlyBrace": true
+    },
+    "disallowSpacesInFunctionExpression": {
+        "beforeOpeningRoundBrace": true
+    },
+    "validateJSDoc": {
+        "checkParamNames": true,
+        "requireParamTypes": false
+    },
+    "validateQuoteMarks": "'",
+    "disallowSpacesInsideParentheses": true
+}
