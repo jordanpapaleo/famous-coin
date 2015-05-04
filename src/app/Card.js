@@ -1,16 +1,21 @@
-import {transitions} from 'famous';
-import {DomView} from '../shared/DomView';
+import View from 'famous-creative/display/View';
+const Curves = FamousPlatform.transitions.Curves;
 
-const Curves = transitions.Curves;
+export class Card extends View {
+    constructor(node, options) {
+        super(node, options);
+        this.model = options.model;
 
-export class Card extends DomView {
-    setProperties() {
-        this.setSize(['absolute', 350], ['absolute', 220]);
-        this.mountPoint.set(.5, 0);
-        this.align.set(.5, 0);
-        this.origin.set(.5, .5);
-        this.scale.set(.5, .5, .5);
-        this.position.set(-300, 300, this.model.i * 350);
+        this.setSizeMode(1, 1);
+        this.setAbsoluteSize(350, 220);
+        this.setMountPoint(.5, 0);
+        this.setAlign(.5, 0);
+        this.setOrigin(.5, .5);
+        this.setScale(.5, .5, .5);
+        this.setPosition(-300, 300, this.model.i * 350);
+
+        this.createDOMElement();
+        this.render();
     }
 
     render() {
@@ -19,36 +24,36 @@ export class Card extends DomView {
         this.loadCards();
     }
 
-    addCardFront() {
-        let cardFront = new DomView({
+    addCardBack() {
+        let cardBack = new View(this.node.addChild());
+        cardBack.setSizeMode(0, 0);
+        cardBack.setProportionalSize(1, 1);
+        cardBack.createDOMElement({
             tagName: 'img',
-            node: this.node.addChild(),
-            model: { imgPath: this.model.front }
+            classes: [['card-img-back']],
+            properties: {
+                'backface-visibility': 'visible'
+            }
         });
-
-        cardFront.setStyle({
-            'backface-visibility': 'hidden'
+        cardBack.setDOMAttributes({
+            'src': this.model.back
         });
-
-        cardFront.size.setProportional(1, 1);
-        cardFront.el.addClass('card-img-front');
-        cardFront.el.setAttribute('src', cardFront.model.imgPath);
     }
 
-    addCardBack() {
-        let cardBack = new DomView({
+    addCardFront() {
+        let cardFront = new View(this.node.addChild());
+        cardFront.setSizeMode(0, 0);
+        cardFront.setProportionalSize(1, 1);
+        cardFront.createDOMElement({
             tagName: 'img',
-            node: this.node.addChild(),
-            model: { imgPath: this.model.back }
+            classes: ['card-img-front'],
+            properties: {
+                'backface-visibility': 'hidden'
+            }
         });
-
-        cardBack.setStyle({
-            'backface-visibility': 'visible'
+        cardFront.setDOMAttributes({
+            'src': this.model.front
         });
-
-        cardBack.size.setProportional(1, 1);
-        cardBack.el.addClass('card-img-back');
-        cardBack.el.setAttribute('src', cardBack.model.imgPath);
     }
 
     loadCards() {
@@ -93,16 +98,16 @@ export class Card extends DomView {
 
         // I want a slight delay after the app loads
         setTimeout(function() {
-            _this.position.setX(0, {
+            _this.setPositionX(0, {
                 curve: Curves.easeInOut,
                 duration: 650
             }, function() {
                 // I want a slight delay after the animation is done
                 setTimeout(function() {
                     const options = { curve: 'outBack', duration: 500 };
-                    _this.rotation.setZ(_this.model.rotation.z, options);
-                    _this.position.setX(_this.model.position.x, options);
-                    _this.position.setY(_this.model.position.y, options);
+                    _this.setRotationZ(_this.model.rotation.z, options);
+                    _this.setPositionX(_this.model.position.x, options);
+                    _this.setPositionY(_this.model.position.y, options);
                 }, 75);
             });
         }, 250);

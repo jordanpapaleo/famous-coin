@@ -1,29 +1,35 @@
-import {components, transitions} from 'famous';
-import {DomView} from '../shared/DomView';
+import View from 'famous-creative/display/View';
 
-const Curves         = transitions.Curves;
+const Curves = FamousPlatform.transitions.Curves;
 
-export class Hand extends DomView {
-    constructor(options) {
-        super(options);
+export class Hand extends View {
+    constructor(node, options) {
+        super(node, options);
 
-        this.el.setAttribute('src', this.model.imgPath);
+        this.setSizeMode(1, 1);
+        this.setAbsoluteSize(70, 75);
+        this.setPositionY(296);
+        this.setPositionZ(2000);
+        this.setMountPoint(.5, 0);
+        this.setAlign(.5, 0);
+
+        this.model = options.model;
+
+        this.createDOMElement({
+            tagName: 'img'
+        });
+
+        this.setDOMAttributes({
+            'src': this.model.imgPath
+        });
 
         this.setEvents();
         this.startAnimation();
     }
 
-    setProperties() {
-        this.setSize(['absolute', 70], ['absolute', 75]);
-        this.position.setY(296);
-        this.position.setZ(2000);
-        this.mountPoint.set(.5, 0);
-        this.align.set(.5, 0);
-    }
 
     setEvents() {
         const _this = this;
-        this.eventHandler = new components.EventHandler(this.node);
 
         this.on('dragging', function(message) {
             if(message === 'start') {
@@ -31,7 +37,7 @@ export class Hand extends DomView {
             }
         });
 
-        this.on('resetApp', function(message) {
+        this.on('resetApp', function() {
             _this.restartAnimation();
         });
     }
@@ -43,8 +49,8 @@ export class Hand extends DomView {
 
     stopAnimation() {
         this.isHalted = true;
-        this.opacity.halt();
-        this.position.halt();
+        this.haltOpacity();
+        this.haltPosition();
     }
 
     restartAnimation() {
@@ -60,7 +66,7 @@ export class Hand extends DomView {
         const _this = this;
         let duration = 1200;
 
-        this.position.setY(196, {
+        this.setPositionY(196, {
             duration,
             curve: Curves.linear
         }, function() {
@@ -69,7 +75,7 @@ export class Hand extends DomView {
 
         // Start the opacity half way through the animation
         setTimeout(function() {
-            _this.opacity.set(0, {
+            _this.setOpacity(0, {
                 curve: Curves.linear,
                 duration: duration / 2
             });
@@ -82,12 +88,12 @@ export class Hand extends DomView {
         }
 
         const _this = this;
-        this.position.setY(296, {
+        this.setPositionY(296, {
             duration: 0
         }, function() {
             //TODO BUG:  Callbacks are not working correctly
             setTimeout(function() {
-                _this.opacity.set(1, { duration: 100}, function() {
+                _this.setOpacity(1, { duration: 100}, function() {
                     //TODO BUG:  Callbacks are not working correctly
                     // A quick pause after the animation completes
                     setTimeout(function() {

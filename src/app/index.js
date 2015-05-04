@@ -1,32 +1,37 @@
-import {core, domRenderables, components, transitions} from 'famous';
-import {DomView} from '../shared/DomView';
-import {Timeline} from '../shared/Timeline';
+import View     from 'famous-creative/display/View';
+import Timeline from 'famous-creative/animation/Timeline';
+import {Hand}   from './Hand';
+import {Card}   from './Card';
 
-import {Hand} from './Hand';
-import {Card} from './Card';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
-const GestureHandler = components.GestureHandler;
-const Curves         = transitions.Curves;
-const Camera         = components.Camera;
+const GestureHandler = FamousPlatform.components.GestureHandler;
+const Curves         = FamousPlatform.transitions.Curves;
+const Camera         = FamousPlatform.components.Camera;
 
-export class App extends DomView {
-    setProperties() {
-        this.setSize(['absolute', 320], ['absolute', 568]);
-        this.mountPoint.set(.5, .5);
-        this.align.set(.5, .5);
-    }
-
-    preRender() {
+export class App extends View {
+    constructor(node, options) {
+        super(node, options);
         this.timeline = new Timeline({ timescale: 1 });
+
+        this.setSizeMode(1, 1);
+        this.setAbsoluteSize(320, 568);
+        this.setMountPoint(.5, .5);
+        this.setAlign(.5, .5);
+
+        this.createDOMElement({
+            properties: {
+                'border': '1px solid black',
+                'overflow': 'hidden'
+            }
+        });
+
+        this.render();
+        this.setEvents();
+        this.registerTimelinePaths();
     }
 
     render() {
-        this.setStyle({
-            'border': '1px solid black',
-            'overflow': 'hidden'
-        });
-
         this.renderBlueScreen();
         this.renderTopText();
         this.renderCards();
@@ -38,39 +43,32 @@ export class App extends DomView {
         this.renderPreOrder();
     }
 
-    postRender() {
-        this.setEvents();
-        this.initTimeline();
-    }
-
     renderBlueScreen() {
-        this.blueScreen = new DomView({
-            node: this.node.addChild(),
-            model: {}
+        this.blueScreen = new View(this.node.addChild());
+
+        this.blueScreen.createDOMElement({
+            properties: {
+                'background-color': 'rgb(22, 139, 221)'
+            },
+            classes: ['blue-screen']
         });
 
-        this.blueScreen.setStyle({
-            'background-color': 'rgb(22, 139, 221)'
-        });
-
-        this.blueScreen.el.addClass('blue-screen');
-        this.blueScreen.setSize(['relative', 1], ['relative', 1]);
-        this.blueScreen.align.set(0, 0, 0);
-        this.blueScreen.position.set(0, 580, -1000);
+        this.blueScreen.setSizeMode(0, 0);
+        this.blueScreen.setProportionalSize(1, 1);
+        this.blueScreen.setAlign(0, 0, 0);
+        this.blueScreen.setPosition(0, 580, -1000);
     }
 
     renderTopText() {
-        this.topText = new TopText({
-            node: this.node.addChild(),
-            model: 'Try<br>simple'
-        });
+        this.topText = new TopText(this.node.addChild());
     }
 
     renderHand() {
-        this.hand = new Hand({
+        this.hand = new Hand(this.node.addChild(), {
             tagName: 'img',
-            node: this.node.addChild(),
-            model: { imgPath: 'assets/svg/hand.svg' }
+            model: {
+                imgPath: 'assets/svg/hand.svg'
+            }
         });
     }
 
@@ -79,17 +77,16 @@ export class App extends DomView {
 
         this.cards = [];
         let cardsSrc = [
-            { front: 'assets/images/gift.png', back: 'assets/svg/cardBack.svg'},
-            { front: 'assets/images/credit.png', back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/images/gift.png',       back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/images/credit.png',     back: 'assets/svg/cardBack.svg'},
             { front: 'assets/images/membership.png', back: 'assets/svg/cardBack.svg'},
-            { front: 'assets/images/debit.png', back: 'assets/svg/cardBack.svg'},
-            { front: 'assets/svg/coinFront.svg', back: 'assets/svg/coinBack.svg'}
+            { front: 'assets/images/debit.png',      back: 'assets/svg/cardBack.svg'},
+            { front: 'assets/svg/coinFront.svg',     back: 'assets/svg/coinBack.svg'}
         ];
 
         cardsSrc.forEach(function(card, i) {
-            let cardNode = new Card({
+            let cardNode = new Card(_this.node.addChild(), {
                 tagName: 'div',
-                node: _this.node.addChild(),
                 model: {
                     front: card.front,
                     back: card.back,
@@ -98,7 +95,7 @@ export class App extends DomView {
             });
 
             if(i === cardsSrc.length - 1) {
-                cardNode.opacity.set(0);
+                cardNode.setOpacity(0);
             }
 
             _this.cards.push(cardNode);
@@ -106,10 +103,7 @@ export class App extends DomView {
     }
 
     renderTagLine() {
-        this.tagLine = new TagLine({
-            node: this.node.addChild(),
-            model: {}
-        });
+        this.tagLine = new TagLine(this.node.addChild());
     }
 
     renderSpinningCoin() {
@@ -121,90 +115,87 @@ export class App extends DomView {
         this.spinningCoins = [];
 
         for(var i = 0; i < svgPaths.length; i++) {
-            let coin = new DomView({
-                tagName: 'img',
-                node: this.node.addChild(),
-                model: {imgPath: svgPaths[i]}
-            });
+            let coin = new View(this.node.addChild());
+            let sizeX, sizeY, posY;
 
             if(i === 0) {
-                coin.setSize(['absolute', 90], ['absolute', 90]);
-                coin.position.setY(592);
+                //Outer coin
+                sizeX = 90;
+                sizeY = 90;
+                posY  = 592;
             } else if(i === 1) {
-                coin.setSize(['absolute', 77], ['absolute', 77]);
-                coin.position.setY(604);
+                //Inner coin
+                sizeX = 77;
+                sizeY = 77;
+                posY  = 604;
             }
 
-            coin.mountPoint.set(.5, 0);
-            coin.align.set(.5, 0);
-            coin.origin.set(.5, .5);
-            coin.el.setAttribute('src', coin.model.imgPath);
+            coin.setAbsoluteSize(sizeX, sizeY);
+            coin.setPositionY(posY);
+
+            coin.setMountPoint(.5, 0);
+            coin.setAlign(.5, 0);
+            coin.setOrigin(.5, .5);
+
+            coin.createDOMElement({
+                tagName: 'img'
+            });
+            coin.setDOMAttributes({'src': svgPaths[i]});
 
             this.spinningCoins.push(coin);
         }
     }
 
     renderCoin() {
-        this.coin = new Coin({
-            node: this.node.addChild(),
-            model: {}
-        });
+        this.coin = new Coin(this.node.addChild());
     }
 
     renderGetYours() {
-        this.getYours = new GetYours({
-            node: this.node.addChild(),
-            model: {}
-        });
+        this.getYours = new GetYours(this.node.addChild());
     }
 
     renderPreOrder() {
-        this.preOrder = new PreOrder({
-            tag: 'button',
-            node: this.node.addChild(),
-            model: {}
+        this.preOrder = new PreOrder(this.node.addChild(), {
+            tag: 'button'
         });
     }
 
     setEvents() {
-        const _this = this;
         let isScrubbing = false;
         let hasFinished = false;
 
-        this.on('mousedown', function(e) {
+        this.on('mousedown', (e) => {
             if(!hasFinished) {
-                _this.emit('dragging', 'start');
+                this.emit('dragging', 'start');
                 isScrubbing = true;
             }
         });
 
-        this.on('mousemove', function(e) {
+        this.on('mousemove', (e) => {
             if(isScrubbing) {
-                _this.mouseMovement = {x: e.clientX, y: e.clientY};
-                _this.scrubTimeline(_this.mouseMovement.movement);
+                this.mouseMovement = {
+                    x: e.clientX,
+                    y: e.clientY
+                };
+                this.scrubTimeline(this.mouseMovement.movement);
             }
         });
 
-        this.on('mouseup', function(e) {
+        this.on('mouseup', (e) => {
             isScrubbing = false;
             let duration;
             this.mouseMovement = null;
 
-            setTimeout(function () {
-                if(_this.currentTime > (_this.time.step1 / 2)) { // FINISH the time line
-                    duration = _this.time.end - _this.currentTime;
-
-                    _this.currentTime = _this.time.end;
-                    _this.timeline.set(_this.currentTime, { duration });
-                    hasFinished = true;
-                } else {  //RESET the time line
-                    duration = _this.currentTime;
-
-                    _this.emit('resetApp', { duration });
-                    _this.currentTime = 0;
-                    _this.timeline.set(_this.currentTime, { duration });
-                }
-            }, 0);
+            if(this.currentTime > (this.time.step1 / 2)) { // FINISH the time line
+                duration = this.time.end - this.currentTime;
+                this.currentTime = this.time.end;
+                hasFinished = true;
+            } else {  //RESET the time line
+                duration = this.currentTime;
+                this.emit('resetApp', { duration });
+                this.currentTime = 0;
+            }
+            this.timeline.set(this.currentTime, { duration });
         });
     }
 
@@ -248,31 +239,32 @@ export class App extends DomView {
             y: window.innerHeight / 2
         };
 
-        const appSize = this.size.get();
-        const cardSize = coinCard.size.get();
-        const cardPosition ={
+        const appSize = this.getSize();
+        const cardSize = coinCard.getSize();
+        const cardPosition = {
             x: coinCard.position.getX(),
-            y: coinCard.position.getY()
+            y: coinCard.getPositionY()
         };
         const cardCenter = {
             x: viewPortCenter.x,
             y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
         };
 
-        this.on(['mouseleave', 'mouseout'], function(e) {
-            coinCard.rotation.setY(0, {
+        let releaseSpring = function(e) {
+            coinCard.setRotationY(0, {
                 curve: Curves.spring,
                 duration: 1000
             });
 
-            coinCard.rotation.setX(0, {
+            coinCard.setRotationX(0, {
                 curve: Curves.spring,
                 duration: 1000
             });
-        });
+        };
 
+        this.on('mouseleave', releaseSpring);
+        this.on('mouseout', releaseSpring);
         this.on('mousemove', function(e) {
-
             let offset = {
                 x: e.clientX - cardCenter.x,
                 y: e.clientY - cardCenter.y
@@ -283,15 +275,15 @@ export class App extends DomView {
 
             if(offset.x > -maxOffsetX && offset.x < maxOffsetX && offset.y > -maxOffsetY && offset.y < maxOffsetY) {
                 //We Flip the X and Y here because the card has a rotation of 90 degrees, which flips its axis
-                coinCard.rotation.setY((((offset.x * Math.PI) / 3) / 180));
-                coinCard.rotation.setX((((offset.y * Math.PI) / 4) / 180));
+                coinCard.setRotationY((((offset.x * Math.PI) / 3) / 180));
+                coinCard.setRotationX((((offset.y * Math.PI) / 4) / 180));
             } else {
-                coinCard.rotation.setY(0, {
+                coinCard.setRotationY(0, {
                     curve: Curves.spring,
                     duration: 1000
                 });
 
-                coinCard.rotation.setX(0, {
+                coinCard.setRotationX(0, {
                     curve: Curves.spring,
                     duration: 1000
                 });
@@ -299,8 +291,7 @@ export class App extends DomView {
         });
     }
 
-    initTimeline() {
-        const _this = this;
+    registerTimelinePaths() {
         this.currentTime = 0; //Used in timeline scrubbing
 
         this.time = {};
@@ -316,8 +307,10 @@ export class App extends DomView {
         this.time.end   = this.time.step8 + 500;  // Finis
 
         /*--------------------- BLUE SCREEN ---------------------*/
-        this.timeline.registerComponent({
-            component: this.blueScreen.position,
+        this.timeline.registerPath({
+            handler: (val) => {
+                this.blueScreen.setPosition(...val)
+            },
             path: [
                 [this.time.start, [0, 580]],
                 [this.time.step3, [0, 580]],
@@ -326,16 +319,24 @@ export class App extends DomView {
         });
 
         /*--------------------- TOP TEXT ---------------------*/
-        this.timeline.registerComponent({
-            component: this.topText.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.topText.setPosition(...val)
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.topText.position.getY()]],
+                [this.time.start, [0, this.topText.getPositionY()]],
                 [this.time.step1, [0, -200]] // The element is 200px tall, this puts it out of view
             ]
         });
 
-        this.timeline.registerComponent({
-            component: this.topText.opacity,
+        this.timeline.registerPath({
+            handler: function(val) {
+                //console.log('val',val);
+                //console.log('this.topText',this.topText);
+                //console.log('pre');
+                //this.topText.setOpacity(...val);
+                //console.log('post');
+            }.bind(this),
             path: [
                 [this.time.start, 1],
                 [(this.time.step1 / 3), 1], // Timing delay
@@ -344,28 +345,24 @@ export class App extends DomView {
         });
 
         /*--------------------- HAND ---------------------*/
-        this.timeline.registerComponent({
-            component: this.hand.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.hand.setPosition(...val)
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.hand.position.getY()]], //TODO BUG: this is always starting at 0...
+                [this.time.start, [0, this.hand.getPositionY()]],
                 [this.time.step1, [0, -75]] // The element is 75px tall, this moves it out of view at the top
             ]
         });
 
-        this.timeline.registerComponent({
-            component: this.hand.opacity,
-            path: [
-                [this.time.start, this.hand.opacity.get()],
-                [this.time.step1, 0]
-            ]
-        });
-
         /*--------------------- TAG LINE ---------------------*/
-        this.timeline.registerComponent({
-            component: this.tagLine.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.tagLine.setPosition(...val);
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.tagLine.position.getY()]],
-                [this.time.step4, [0, this.tagLine.position.getY()]],
+                [this.time.start, [0, this.tagLine.getPositionY()]],
+                [this.time.step4, [0, this.tagLine.getPositionY()]],
                 [this.time.step6, [0, 50]], // The element is 100px tall, this puts it out of view
                 [this.time.step7, [0, 40]],
                 [this.time.step8, [0, -110]]
@@ -373,92 +370,127 @@ export class App extends DomView {
         });
 
         /*--------------------- SPINNING COINS ---------------------*/
-        this.spinningCoins.forEach(function(coin, i) {
-            let startingYPos = coin.position.getY();
+        for(let i = 0, j = this.spinningCoins.length; i < j; i++) {
+            let coin = this.spinningCoins[i];
+
+            let startingYPos = coin.getPositionY();
             let endingYPos = startingYPos / 2;
 
-            _this.timeline.registerComponent({
-                component: coin.position,
+            this.timeline.registerPath({
+                handler: function(val) {
+                    coin.setPosition(...val)
+                }.bind(this),
                 path: [
-                    [_this.time.start, [0, startingYPos]],
-                    [_this.time.step7, [0, startingYPos]],
-                    [_this.time.step8, [0, endingYPos]]
+                    [this.time.start, [0, startingYPos]],
+                    [this.time.step7, [0, startingYPos]],
+                    [this.time.step8, [0, endingYPos]]
                 ]
             });
 
-            _this.timeline.registerCallback( _this.time.step7, 1, function() {
-                if(i === 0) {
-                    coin.rotation.set(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
-                        curve: Curves.easeOut,
-                        duration: 3000
-                    });
-                } else if(i === 1) {
-                    coin.rotation.set(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
-                        curve:  Curves.easeOut,
-                        duration: 3000
-                    });
-                }
+
+            this.timeline.registerPath({
+                handler : function(time) {
+                    if(time >= this.time.step7) {
+                        if(i === 0) {
+                            coin.setRotation(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
+                                curve: Curves.easeOut,
+                                duration: 3000
+                            });
+                        } else if(i === 1) {
+                            coin.setRotation(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
+                                curve:  Curves.easeOut,
+                                duration: 3000
+                            });
+                        }
+                    }
+                }.bind(this),
+                path : [
+                    [0, 0],
+                    [this.time.end, this.time.end]
+                ]
             });
-        });
+        }
 
         /*--------------------- COIN TEXT ---------------------*/
-        this.timeline.registerComponent({
-            component: this.coin.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.coin.setPosition(...val)
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.coin.position.getY()]],
-                [this.time.step7, [0, this.coin.position.getY()]],
-                [this.time.step8, [0, this.coin.position.getY() / 2]]
+                [this.time.start, [0, this.coin.getPositionY()]],
+                [this.time.step7, [0, this.coin.getPositionY()]],
+                [this.time.step8, [0, this.coin.getPositionY() / 2]]
             ]
         });
 
         /*--------------------- GET YOURS ---------------------*/
-        this.timeline.registerComponent({
-            component: this.getYours.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.getYours.setPosition(...val);
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.getYours.position.getY()]],
-                [this.time.step7, [0, this.getYours.position.getY()]],
-                [this.time.step8, [0, this.getYours.position.getY() / 2]]
+                [this.time.start, [0, this.getYours.getPositionY()]],
+                [this.time.step7, [0, this.getYours.getPositionY()]],
+                [this.time.step8, [0, this.getYours.getPositionY() / 2]]
             ]
         });
 
         /*--------------------- PRE ORDER ---------------------*/
-        this.timeline.registerComponent({
-            component: this.preOrder.position,
+        this.timeline.registerPath({
+            handler: function(val) {
+                this.preOrder.setPosition(...val);
+            }.bind(this),
             path: [
-                [this.time.start, [0, this.preOrder.position.getY()]],
-                [this.time.step7, [0, this.preOrder.position.getY()]],
-                [this.time.step8, [0, this.preOrder.position.getY() / 2]]
+                [this.time.start, [0, this.preOrder.getPositionY()]],
+                [this.time.step7, [0, this.preOrder.getPositionY()]],
+                [this.time.step8, [0, this.preOrder.getPositionY() / 2]]
             ]
         });
 
         /*--------------------- CARDS ---------------------*/
-        this.cards.forEach(function(card) {
-            let timeSegments = _this.getCardTimeSegments(card);
+        for(let i = 0, j = this.cards.length; i < j; i++) {
+            let card = this.cards[i];
 
-            _this.timeline.registerComponent({
-                component: card.position,
+            let timeSegments = this.getCardTimeSegments(card);
+
+            this.timeline.registerPath({
+                handler: function(val) {
+                    if (val === 1) debugger;
+                    card.setPosition(...(Array.isArray(val) ? val : [val]));
+                }.bind(this),
                 path: timeSegments.cardPosition
             });
 
-            _this.timeline.registerComponent({
-                component: card.scale,
+            this.timeline.registerPath({
+                handler: function(val) {
+                    card.setScale(...(Array.isArray(val) ? val : [val]));
+                }.bind(this),
                 path: timeSegments.cardScale
             });
 
-            _this.timeline.registerComponent({
-                component: card.rotation,
+            this.timeline.registerPath({
+                handler: function(val) {
+                    card.setRotation(...(Array.isArray(val) ? val : [val]));
+                }.bind(this),
                 path: timeSegments.cardRotation
             });
 
-            _this.timeline.registerComponent({
-                component: card.opacity,
+            this.timeline.registerPath({
+                handler: function(val) {
+                    card.setOpacity(val);
+                }.bind(this),
                 path: timeSegments.cardOpacity
             });
-        });
+        }
 
-        /*--------------------- APP ---------------------*/
-        this.timeline.registerCallback(_this.time.end, 1, function() {
-            _this.addCoinSpringEvent();
+        this.timeline.registerPath({
+            handler : function(time) {
+                if(time >= this.time.end) this.addCoinSpringEvent();
+            }.bind(this),
+            path : [
+                [0, 0],
+                [this.time.end, this.time.end]
+            ]
         });
     }
 
@@ -576,13 +608,13 @@ export class App extends DomView {
                 ];
                 timeSegments.cardPosition = [
                     [this.time.start, currentPosition],
-                    [(this.time.step1 / 2), [0, 250]],
-                    [this.time.step1, [0, 75], Curves.outBack],
-                    [this.time.step3, [0, 75]],
-                    [this.time.step4, [0, 300]],
-                    [this.time.step5, [0, 200]],
-                    [this.time.step7, [0, 200]],
-                    [this.time.step8, [0, 50]]
+                    [(this.time.step1 / 2), [0, 250, 0]],
+                    [this.time.step1, [0, 75, 0], Curves.outBack],
+                    [this.time.step3, [0, 75, 0]],
+                    [this.time.step4, [0, 300, 0]],
+                    [this.time.step5, [0, 200, 0]],
+                    [this.time.step7, [0, 200, 0]],
+                    [this.time.step8, [0, 50, 0]]
                 ];
                 break;
         }
@@ -591,8 +623,6 @@ export class App extends DomView {
     }
 
     scrubTimeline(mouseMovement) {
-        let duration = 0;
-
         // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
         if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
             this.currentTime += mouseMovement.y * 4;
@@ -606,15 +636,9 @@ export class App extends DomView {
         if(this.currentTime > this.time.end) {
             this.currentTime = this.time.end;
         }
-
-        this.timeline.set(this.currentTime, { duration });
+        this.timeline.set(this.currentTime);
     }
 }
 
-
-const root = core.Famous.createContext('body');
-
-window.app = new App({
-    node: root.addChild(),
-    model: {}
-});
+const root = FamousPlatform.core.Famous.createContext('body');
+window.app = new App(root.addChild());
