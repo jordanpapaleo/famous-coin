@@ -141,9 +141,6 @@ export class App extends View {
             coin.setMountPoint(.5, 0);
             coin.setAlign(.5, 0);
             coin.setOrigin(.5, .5);
-
-
-
             this.spinningCoins.push(coin);
         }
     }
@@ -224,6 +221,8 @@ export class App extends View {
             }
         }]);
     }
+
+
 
     set mouseMovement(position) {
         if(!position) {
@@ -315,6 +314,15 @@ export class App extends View {
                 });
             }
         });
+    }
+
+    addGyroscopeEvent() {
+        window.addEventListener("deviceorientation", (e) => {
+            let rotX = e.beta * -Math.PI/180;
+            let rotY = e.gamma * Math.PI/180;
+            this.cards[4].haltRotation();
+            this.cards[4].setRotation(rotX, rotY, (90 * Math.PI / 180), {duration: 100})
+        }, false);
     }
 
     registerTimelinePaths() {
@@ -507,7 +515,10 @@ export class App extends View {
 
         this.timeline.registerPath({
             handler : function(time) {
-                if(time >= this.time.end) this.addCoinSpringEvent();
+                if(time >= this.time.end) {
+                    this.addCoinSpringEvent();
+                    this.addGyroscopeEvent();
+                }
             }.bind(this),
             path : [
                 [0, 0],
