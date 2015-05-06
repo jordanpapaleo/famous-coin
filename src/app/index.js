@@ -157,6 +157,26 @@ export class App extends View {
         this.preOrder = new PreOrder(this.node.addChild(), {
             tag: 'button'
         });
+
+        this.shimmer = new View(this.preOrder.addChild());
+        this.shimmer.createDOMElement({
+            properties: {
+                "background": 'linear-gradient(80deg, rgba(0,0,0,0) 30%,rgba(180,180,180,0.3) 45%,rgba(180,180,180,0.3) 55%, rgba(0,0,0,0) 70%)',
+                "zIndex": 10
+            },
+            classes: ['shimmer']
+        });
+
+        this.shimmer.setPosition(-240, -40, 10);
+    }
+
+    shimmyShimmer() {
+        setTimeout(function() {
+            this.shimmer.setPositionX(240, {
+                duration: 1500,
+                curve: Curves.easeInOut
+            });
+        }.bind(this), 500);
     }
 
     setEvents() {
@@ -518,6 +538,8 @@ export class App extends View {
                 if(time >= this.time.end) {
                     this.addCoinSpringEvent();
                     this.addGyroscopeEvent();
+                    this.shimmyShimmer();
+
                 }
             }.bind(this),
             path : [

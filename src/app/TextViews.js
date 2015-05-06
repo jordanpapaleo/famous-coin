@@ -90,16 +90,18 @@ export class PreOrder extends View {
 
         this.createDOMElement({
             properties: {
+                'background-color': '#000000',
+                'border-radius': '4px',
+                'color': '#FFFFFF',
                 'font-size': '22px',
-                'text-align': 'center',
-                'text-transform': 'uppercase',
                 'font-weight': '700',
                 'line-height': '40px',
-                'color': '#FFFFFF',
-                'background-color': '#000000',
-                'border-radius': '4px'
+                'overflow': 'hidden',
+                'text-align': 'center',
+                'text-transform': 'uppercase'
             },
-            content: 'Pre-order now'
+            content: 'Pre-order now',
+            classes: ['txt-preorder']
         });
 
         this.setAlign(.5, 0);
