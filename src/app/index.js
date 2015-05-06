@@ -13,8 +13,8 @@ export class App extends View {
         super(node, options);
         this.timeline = new Timeline({ timescale: 1 });
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(320, 568);
+        this.setSizeMode(0, 0);
+        this.setAbsoluteSize(1, 1);
         this.setMountPoint(.5, .5);
         this.setAlign(.5, .5);
 
@@ -55,7 +55,7 @@ export class App extends View {
         this.blueScreen.setSizeMode(0, 0);
         this.blueScreen.setProportionalSize(1, 1);
         this.blueScreen.setAlign(0, 0, 0);
-        this.blueScreen.setPosition(0, 580, -1000);
+        this.blueScreen.setPosition(0, window.innerHeight, -1000);
     }
 
     renderTopText() {
@@ -126,12 +126,12 @@ export class App extends View {
                 //Outer coin
                 sizeX = 90;
                 sizeY = 90;
-                posY  = 592;
+                posY  = window.innerHeight * 1.2;
             } else if(i === 1) {
                 //Inner coin
-                sizeX = 77;
-                sizeY = 77;
-                posY  = 604;
+                sizeX = 78;
+                sizeY = 78;
+                posY  = window.innerHeight * 1.4;
             }
 
             coin.setSizeMode(1, 1);
@@ -161,8 +161,8 @@ export class App extends View {
         this.shimmer = new View(this.preOrder.addChild());
         this.shimmer.createDOMElement({
             properties: {
-                "background": 'linear-gradient(80deg, rgba(0,0,0,0) 30%,rgba(180,180,180,0.3) 45%,rgba(180,180,180,0.3) 55%, rgba(0,0,0,0) 70%)',
-                "zIndex": 10
+                'background': 'linear-gradient(80deg, rgba(0,0,0,0) 30%,rgba(180,180,180,0.3) 45%,rgba(180,180,180,0.3) 55%, rgba(0,0,0,0) 70%)',
+                'zIndex': 10
             },
             classes: ['shimmer']
         });
@@ -217,7 +217,7 @@ export class App extends View {
             this.timeline.set(this.currentTime, { duration });
         });
 
-        new GestureHandler(this.node,  [{
+        this.gestures = new GestureHandler(this.node,  [{
             event: 'drag',
             callback: (e) => {
                 let duration;
@@ -241,8 +241,6 @@ export class App extends View {
             }
         }]);
     }
-
-
 
     set mouseMovement(position) {
         if(!position) {
@@ -270,7 +268,7 @@ export class App extends View {
                     x: undefined,
                     y: undefined
                 }
-            }
+            };
         }
 
         return this.mouseProperties;
@@ -295,7 +293,7 @@ export class App extends View {
             y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
         };
 
-        let releaseSpring = function(e) {
+        function releaseSpring(e) {
             coinCard.setRotationY(0, {
                 curve: Curves.spring,
                 duration: 1000
@@ -305,10 +303,11 @@ export class App extends View {
                 curve: Curves.spring,
                 duration: 1000
             });
-        };
+        }
 
         this.on('mouseleave', releaseSpring);
         this.on('mouseout', releaseSpring);
+
         this.on('mousemove', function(e) {
             let offset = {
                 x: e.clientX - cardCenter.x,
@@ -319,10 +318,12 @@ export class App extends View {
             let maxOffsetY = 140;
 
             if(offset.x > -maxOffsetX && offset.x < maxOffsetX && offset.y > -maxOffsetY && offset.y < maxOffsetY) {
+
                 //We Flip the X and Y here because the card has a rotation of 90 degrees, which flips its axis
                 coinCard.setRotationY((((offset.x * Math.PI) / 3) / 180));
                 coinCard.setRotationX((((offset.y * Math.PI) / 4) / 180));
             } else {
+
                 coinCard.setRotationY(0, {
                     curve: Curves.spring,
                     duration: 1000
@@ -337,11 +338,13 @@ export class App extends View {
     }
 
     addGyroscopeEvent() {
-        window.addEventListener("deviceorientation", (e) => {
+        window.addEventListener('deviceorientation', (e) => {
             let rotX = e.beta * -Math.PI/180;
             let rotY = e.gamma * Math.PI/180;
             this.cards[4].haltRotation();
-            this.cards[4].setRotation(rotX, rotY, (90 * Math.PI / 180), {duration: 100})
+            this.cards[4].setRotation(rotX, rotY, (90 * Math.PI / 180), {
+                duration: 100
+            });
         }, false);
     }
 
@@ -363,11 +366,11 @@ export class App extends View {
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerPath({
             handler: (val) => {
-                this.blueScreen.setPosition(...val)
+                this.blueScreen.setPosition(...val);
             },
             path: [
-                [this.time.start, [0, 580]],
-                [this.time.step3, [0, 580]],
+                [this.time.start, [0, window.innerHeight]],
+                [this.time.step3, [0, window.innerHeight]],
                 [this.time.step5, [0, 0]]
             ]
         });
@@ -375,7 +378,7 @@ export class App extends View {
         /*--------------------- TOP TEXT ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.topText.setPosition(...val)
+                this.topText.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.topText.getPositionY()]],
@@ -397,7 +400,7 @@ export class App extends View {
         /*--------------------- HAND ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.hand.setPosition(...val)
+                this.hand.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.hand.getPositionY()]],
@@ -424,12 +427,15 @@ export class App extends View {
             let coin = this.spinningCoins[i];
 
             let startingYPos = coin.getPositionY();
-            let endingYPos = startingYPos / 2;
+            let endingYPos = window.innerHeight * .55;
+            if(i === 1) {
+                endingYPos = endingYPos + 6;
+            }
 
             this.timeline.registerPath({
                 handler: function(val) {
-                    coin.setPosition(...val)
-                }.bind(this),
+                    coin.setPosition(...val);
+                },
                 path: [
                     [this.time.start, [0, startingYPos]],
                     [this.time.step7, [0, startingYPos]],
@@ -437,9 +443,8 @@ export class App extends View {
                 ]
             });
 
-
             this.timeline.registerPath({
-                handler : function(time) {
+                handler: function(time) {
                     if(time >= this.time.step7) {
                         if(i === 0) {
                             coin.setRotation(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
@@ -448,13 +453,13 @@ export class App extends View {
                             });
                         } else if(i === 1) {
                             coin.setRotation(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
-                                curve:  Curves.easeOut,
+                                curve: Curves.easeOut,
                                 duration: 3000
                             });
                         }
                     }
                 }.bind(this),
-                path : [
+                path: [
                     [0, 0],
                     [this.time.end, this.time.end]
                 ]
@@ -464,12 +469,12 @@ export class App extends View {
         /*--------------------- COIN TEXT ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.coin.setPosition(...val)
+                this.coin.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.coin.getPositionY()]],
                 [this.time.step7, [0, this.coin.getPositionY()]],
-                [this.time.step8, [0, this.coin.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .73]]
             ]
         });
 
@@ -481,7 +486,7 @@ export class App extends View {
             path: [
                 [this.time.start, [0, this.getYours.getPositionY()]],
                 [this.time.step7, [0, this.getYours.getPositionY()]],
-                [this.time.step8, [0, this.getYours.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .8]]
             ]
         });
 
@@ -493,7 +498,7 @@ export class App extends View {
             path: [
                 [this.time.start, [0, this.preOrder.getPositionY()]],
                 [this.time.step7, [0, this.preOrder.getPositionY()]],
-                [this.time.step8, [0, this.preOrder.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .9]]
             ]
         });
 
@@ -505,36 +510,35 @@ export class App extends View {
 
             this.timeline.registerPath({
                 handler: function(val) {
-                    if (val === 1) debugger;
                     card.setPosition(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardPosition
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setScale(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardScale
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setRotation(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardRotation
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setOpacity(val);
-                }.bind(this),
+                },
                 path: timeSegments.cardOpacity
             });
         }
 
         this.timeline.registerPath({
-            handler : function(time) {
+            handler: function(time) {
                 if(time >= this.time.end) {
                     this.addCoinSpringEvent();
                     this.addGyroscopeEvent();
@@ -542,7 +546,7 @@ export class App extends View {
 
                 }
             }.bind(this),
-            path : [
+            path: [
                 [0, 0],
                 [this.time.end, this.time.end]
             ]

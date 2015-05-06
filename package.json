@@ -6,17 +6,17 @@
     "start": "npm run build && serve --compress public/ -p 1337",
     "dev": "npm run watch & serve public/ -p 1337",
     "build": "npm run build-famous & npm run build-main & npm run build-styles",
-    "watch": "npm run watch-famous & npm run watch-main & npm run watch-styles",
-    "test": "npm run lint -s",
-    "lint": "npm run lint-eslint && npm run lint-jscs",
-    "build-famous": "browserify -t uglifyify src/main.js | uglifyjs > public/main.bundle.js",
-    "build-main": "browserify -t uglifyify src/main.js | uglifyjs > public/main.bundle.js",
+    "build-famous": "browserify src/famousPlatform.js | uglifyjs > public/famousPlatform.bundle.js",
+    "build-main": "browserify src/main.js | uglifyjs > public/main.bundle.js",
     "build-styles": "catw -c 'lessc -' 'src/styles/*.less' > public/main.bundle.css",
+    "watch": "npm run watch-famous & npm run watch-main & npm run watch-styles",
     "watch-famous": "watchify src/famousPlatform.js -o public/famousPlatform.bundle.js -d -v",
     "watch-main": "watchify src/main.js -o public/main.bundle.js -d -v",
     "watch-styles": "catw -c 'lessc -' 'src/styles/*.less' -o public/main.bundle.css -v",
-    "lint-eslint": "eslint ./",
-    "lint-jscs": "jscs --esnext ./"
+    "test": "npm run lint -s",
+    "lint": "npm run lint-eslint -force && npm run lint-jscs -force",
+    "lint-eslint": "eslint ./src",
+    "lint-jscs": "jscs --esnext ./src"
   },
   "browserify": {
     "transform": [
@@ -35,6 +35,7 @@
     "jscs": "^1.7.3",
     "serve": "^1.4.0",
     "uglify-js": "^2.4.15",
+    "uglifyify": "^3.0.1",
     "watchify": "^3.2.1"
   },
   "author": "Famous Creative",

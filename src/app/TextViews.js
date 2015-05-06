@@ -14,8 +14,9 @@ export class TopText extends View {
 
         this.setDOMContent('Try<br>simple');
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(318, 200);
+        this.setSizeMode(0, 1);
+        this.setProportionalSize(1, null);
+        this.setAbsoluteSize(null, 200);
         this.setOpacity(1);
         this.setPositionY(33);
     }
@@ -35,8 +36,9 @@ export class TagLine extends View {
             content: 'All your cards<br><strong>one coin</strong>'
         });
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(318, 100);
+        this.setSizeMode(0, 1);
+        this.setProportionalSize(1, null);
+        this.setAbsoluteSize(null, 100);
         this.setOpacity(1);
         this.setPositionY(-100);
     }
@@ -56,10 +58,11 @@ export class Coin extends View {
             content: 'coin'
         });
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(318, 50);
+        this.setSizeMode(0, 1);
+        this.setProportionalSize(1, null);
+        this.setAbsoluteSize(null, 50);
         this.setOpacity(1);
-        this.setPositionY(780);
+        this.setPositionY(window.innerHeight * 1.2);
     }
 }
 
@@ -77,10 +80,11 @@ export class GetYours extends View {
             content: 'Get yours first'
         });
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(318, 50);
+        this.setSizeMode(0, 1);
+        this.setProportionalSize(1, null);
+        this.setAbsoluteSize(null, 50);
         this.setOpacity(1);
-        this.setPositionY(880);
+        this.setPositionY(window.innerHeight * 2);
     }
 }
 
@@ -109,6 +113,6 @@ export class PreOrder extends View {
         this.setOpacity(1);
         this.setSizeMode(1, 1);
         this.setAbsoluteSize(220, 40);
-        this.setPositionY(1000);
+        this.setPositionY(window.innerHeight * 3);
     }
 }
