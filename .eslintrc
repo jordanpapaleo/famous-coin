@@ -46,6 +46,7 @@
         "no-console": 0,
         "no-extend-native": 0,
         "no-constant-condition": 1,
+        "no-loop-func": 0,
         "no-multi-spaces": 0,
         "no-shadow": 1,
         "no-ternary": 0,

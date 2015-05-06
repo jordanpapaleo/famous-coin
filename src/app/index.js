@@ -161,8 +161,8 @@ export class App extends View {
         this.shimmer = new View(this.preOrder.addChild());
         this.shimmer.createDOMElement({
             properties: {
-                "background": 'linear-gradient(80deg, rgba(0,0,0,0) 30%,rgba(180,180,180,0.3) 45%,rgba(180,180,180,0.3) 55%, rgba(0,0,0,0) 70%)',
-                "zIndex": 10
+                'background': 'linear-gradient(80deg, rgba(0,0,0,0) 30%,rgba(180,180,180,0.3) 45%,rgba(180,180,180,0.3) 55%, rgba(0,0,0,0) 70%)',
+                'zIndex': 10
             },
             classes: ['shimmer']
         });
@@ -217,7 +217,7 @@ export class App extends View {
             this.timeline.set(this.currentTime, { duration });
         });
 
-        new GestureHandler(this.node,  [{
+        this.gestures = new GestureHandler(this.node,  [{
             event: 'drag',
             callback: (e) => {
                 let duration;
@@ -268,7 +268,7 @@ export class App extends View {
                     x: undefined,
                     y: undefined
                 }
-            }
+            };
         }
 
         return this.mouseProperties;
@@ -293,7 +293,7 @@ export class App extends View {
             y: (viewPortCenter.y - (appSize[1] / 2)) + ((cardSize[1] / 2) + cardPosition.y)
         };
 
-        let releaseSpring = function(e) {
+        function releaseSpring(e) {
             coinCard.setRotationY(0, {
                 curve: Curves.spring,
                 duration: 1000
@@ -303,7 +303,7 @@ export class App extends View {
                 curve: Curves.spring,
                 duration: 1000
             });
-        };
+        }
 
         this.on('mouseleave', releaseSpring);
         this.on('mouseout', releaseSpring);
@@ -338,11 +338,13 @@ export class App extends View {
     }
 
     addGyroscopeEvent() {
-        window.addEventListener("deviceorientation", (e) => {
+        window.addEventListener('deviceorientation', (e) => {
             let rotX = e.beta * -Math.PI/180;
             let rotY = e.gamma * Math.PI/180;
             this.cards[4].haltRotation();
-            this.cards[4].setRotation(rotX, rotY, (90 * Math.PI / 180), {duration: 100})
+            this.cards[4].setRotation(rotX, rotY, (90 * Math.PI / 180), {
+                duration: 100
+            });
         }, false);
     }
 
@@ -364,7 +366,7 @@ export class App extends View {
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerPath({
             handler: (val) => {
-                this.blueScreen.setPosition(...val)
+                this.blueScreen.setPosition(...val);
             },
             path: [
                 [this.time.start, [0, window.innerHeight]],
@@ -376,7 +378,7 @@ export class App extends View {
         /*--------------------- TOP TEXT ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.topText.setPosition(...val)
+                this.topText.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.topText.getPositionY()]],
@@ -398,7 +400,7 @@ export class App extends View {
         /*--------------------- HAND ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.hand.setPosition(...val)
+                this.hand.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.hand.getPositionY()]],
@@ -432,8 +434,8 @@ export class App extends View {
 
             this.timeline.registerPath({
                 handler: function(val) {
-                    coin.setPosition(...val)
-                }.bind(this),
+                    coin.setPosition(...val);
+                },
                 path: [
                     [this.time.start, [0, startingYPos]],
                     [this.time.step7, [0, startingYPos]],
@@ -442,7 +444,7 @@ export class App extends View {
             });
 
             this.timeline.registerPath({
-                handler : function(time) {
+                handler: function(time) {
                     if(time >= this.time.step7) {
                         if(i === 0) {
                             coin.setRotation(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
@@ -451,13 +453,13 @@ export class App extends View {
                             });
                         } else if(i === 1) {
                             coin.setRotation(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
-                                curve:  Curves.easeOut,
+                                curve: Curves.easeOut,
                                 duration: 3000
                             });
                         }
                     }
                 }.bind(this),
-                path : [
+                path: [
                     [0, 0],
                     [this.time.end, this.time.end]
                 ]
@@ -467,7 +469,7 @@ export class App extends View {
         /*--------------------- COIN TEXT ---------------------*/
         this.timeline.registerPath({
             handler: function(val) {
-                this.coin.setPosition(...val)
+                this.coin.setPosition(...val);
             }.bind(this),
             path: [
                 [this.time.start, [0, this.coin.getPositionY()]],
@@ -508,36 +510,35 @@ export class App extends View {
 
             this.timeline.registerPath({
                 handler: function(val) {
-                    if (val === 1) debugger;
                     card.setPosition(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardPosition
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setScale(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardScale
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setRotation(...(Array.isArray(val) ? val : [val]));
-                }.bind(this),
+                },
                 path: timeSegments.cardRotation
             });
 
             this.timeline.registerPath({
                 handler: function(val) {
                     card.setOpacity(val);
-                }.bind(this),
+                },
                 path: timeSegments.cardOpacity
             });
         }
 
         this.timeline.registerPath({
-            handler : function(time) {
+            handler: function(time) {
                 if(time >= this.time.end) {
                     this.addCoinSpringEvent();
                     this.addGyroscopeEvent();
@@ -545,7 +546,7 @@ export class App extends View {
 
                 }
             }.bind(this),
-            path : [
+            path: [
                 [0, 0],
                 [this.time.end, this.time.end]
             ]
