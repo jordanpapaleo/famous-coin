@@ -1,35 +1,47 @@
 {
-  "name": "famous-seed",
+  "name": "Coin-Ad",
   "version": "0.1.0",
-  "description": "seed for a browserified version of famous",
-  "browser": "src/worker.js",
+  "description": "Famo.us MixedMode advertisement",
   "scripts": {
-    "build-main": "browserify src/main.js -t [ babelify --playground --experimental ] | uglifyjs > public/main.bundle.js",
-    "watch-main": "watchify src/main.js -o public/main.bundle.js -d -v -t [ babelify --playground --experimental ]",
-    "start": "npm run build && serve public/ -p 1337",
-    "start-dev": "npm run watch & serve public/ -p 1337",
-    "test": "npm run lint -s && npm run build",
-    "build": "npm run build-main",
-    "watch": "npm run watch-main",
-    "lint-eslint": "eslint src/",
-    "lint-jscs": "jscs --esnext src/",
-    "lint": "npm run lint-eslint --force && npm run lint-jscs --force"
+    "start": "npm run build && serve --compress public/ -p 1337",
+    "dev": "npm run watch & serve public/ -p 1337",
+    "build": "npm run build-famous & npm run build-main & npm run build-styles",
+    "watch": "npm run watch-famous & npm run watch-main & npm run watch-styles",
+    "test": "npm run lint -s",
+    "lint": "npm run lint-eslint && npm run lint-jscs",
+    "build-famous": "browserify -t uglifyify src/main.js | uglifyjs > public/main.bundle.js",
+    "build-main": "browserify -t uglifyify src/main.js | uglifyjs > public/main.bundle.js",
+    "build-styles": "catw -c 'lessc -' 'src/styles/*.less' > public/main.bundle.css",
+    "watch-famous": "watchify src/famousPlatform.js -o public/famousPlatform.bundle.js -d -v",
+    "watch-main": "watchify src/main.js -o public/main.bundle.js -d -v",
+    "watch-styles": "catw -c 'lessc -' 'src/styles/*.less' -o public/main.bundle.css -v",
+    "lint-eslint": "eslint ./",
+    "lint-jscs": "jscs --esnext ./"
+  },
+  "browserify": {
+    "transform": [
+      "cssify",
+      "babelify"
+    ]
   },
   "devDependencies": {
-    "babel-eslint": "^2.0.2",
-    "babelify": "^5.0.3",
+    "babel-eslint": "^3.0.1",
+    "babelify": "^6.0.2",
     "browser-sync": "^2.0.0-rc10",
-    "browserify": "^8.0.3",
-    "eslint": "^0.19.0",
+    "browserify": "^10.0.0",
+    "catw": "^1.0.0",
+    "cssify": "^0.7.0",
+    "eslint": "^0.20.0",
     "jscs": "^1.7.3",
     "serve": "^1.4.0",
     "uglify-js": "^2.4.15",
-    "watchify": "^2.1.0"
+    "watchify": "^3.2.1"
   },
-  "author": "Famous",
+  "author": "Famous Creative",
   "license": "All rights reserved",
   "dependencies": {
     "brfs": "^1.1.1",
-    "famous": "git+ssh://git@github.famo.us/platform/oasis#v0.1.0"
+    "famous-creative": "git+ssh://git@github.famo.us:creative/famous-creative#0.2.4",
+    "less": "^2.5.0"
   }
 }

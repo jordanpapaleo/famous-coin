@@ -1,3 +1,8 @@
+* {
+    -webkit-transform-style: preserve-3d; /* Chrome, Safari, Opera */
+    transform-style: preserve-3d;
+}
+
 body {
     font-family: 'HelveticaNeueThin', 'HelveticaNeue-Thin', 'Helvetica Neue Thin', 'HelveticaNeue', 'Helvetica Neue', 'Open Sans', 'Arial', sans-serif;
     -webkit-touch-callout: none;
@@ -6,6 +11,17 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    -webkit-perspective:10000px;
+    perspective:10000px;
+
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.backface-visible {
+    -webkit-backface-visibility: visible;
+    backface-visibility: visible;
 }
 
 /*20 blue dots*/

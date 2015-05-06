@@ -1,114 +1,115 @@
-import {core, domRenderables, components, transitions} from 'famous';
-import {View} from '../shared/View';
-import Utils from '../utils/Utilities';
-import {Timeline} from '../shared/Timeline';
+import View from 'famous-creative/display/View';
+const Curves = FamousPlatform.transitions.Curves;
 
 export class Card extends View {
-    setProperties() {
-        this.size.setAbsolute(350, 220);
-        this.mountPoint.set(.5, 0);
-        this.align.set(.5, 0);
-        this.origin.set(0.5, 0.5, 0.5);
-        this.scale.setX(.5);
-        this.scale.setY(.5);
-        this.scale.setZ(.5);
+    constructor(node, options) {
+        super(node, options);
+        this.model = options.model;
 
-        this.position.setZ(this.model.i * 350);
-        this.position.setX(-300);
-        this.position.setY(300);
+        this.setSizeMode(1, 1);
+        this.setAbsoluteSize(350, 220);
+        this.setMountPoint(.5, 0);
+        this.setAlign(.5, 0);
+        this.setOrigin(.5, .5);
+        this.setScale(.5, .5, .5);
+        this.setPosition(-300, 300, this.model.i * 350);
+
+        this.createDOMElement();
+        this.render();
     }
 
     render() {
         this.addCardBack();
         this.addCardFront();
-
         this.loadCards();
     }
 
-    addCardFront() {
-        let cardFront = new View({
+    addCardBack() {
+        let cardBack = new View(this.node.addChild());
+        cardBack.setSizeMode(0, 0);
+        cardBack.setProportionalSize(1, 1);
+        cardBack.createDOMElement({
             tagName: 'img',
-            node: this.node.addChild(),
-            model: { imgPath: this.model.front }
+            classes: [['card-img-back']],
+            properties: {
+                'backface-visibility': 'visible'
+            }
         });
-
-        Utils.setStyle(cardFront, {
-            'backface-visibility': 'hidden'
+        cardBack.setDOMAttributes({
+            'src': this.model.back
         });
-
-        cardFront.size.setProportional(1, 1);
-        cardFront.el.addClass('card-img-front');
-        cardFront.el.attribute('src', cardFront.model.imgPath);
     }
 
-    addCardBack() {
-        let cardBack = new View({
+    addCardFront() {
+        let cardFront = new View(this.node.addChild());
+        cardFront.setSizeMode(0, 0);
+        cardFront.setProportionalSize(1, 1);
+        cardFront.createDOMElement({
             tagName: 'img',
-            node: this.node.addChild(),
-            model: { imgPath: this.model.back }
+            classes: ['card-img-front'],
+            properties: {
+                'backface-visibility': 'hidden'
+            }
         });
-
-        Utils.setStyle(cardBack, {
-            'backface-visibility': 'visible'
+        cardFront.setDOMAttributes({
+            'src': this.model.front
         });
-
-        cardBack.size.setProportional(1, 1);
-        cardBack.el.addClass('card-img-back');
-        cardBack.el.attribute('src', cardBack.model.imgPath);
     }
 
     loadCards() {
         const _this = this;
 
-        this.position.setX(0, {
-            curve: 'easeInOut',
-            duration: 650
-        }, function() {
-            let rotation = 0;
-            let position = { x: 0, y: 300 };
+        this.model.rotation = {
+            x: 0,
+            y: 0,
+            z: 0
+        };
 
-            switch(_this.model.i) {
-                case 0:
-                    rotation = (-9 * Math.PI) / 180;
-                    position.x = 30;
-                    position.y = 250;
-                    break;
-                case 1:
-                    rotation = (.5 * Math.PI) / 180;
-                    position.y = 312;
-                    position.x = 20;
-                    break;
-                case 2:
-                    rotation = (30 * Math.PI) / 180;
-                    position.x = -20;
-                    position.y = 355;
-                    break;
-                case 3:
-                    rotation = (-23 * Math.PI) / 180;
-                    position.y = 245;
-                    position.x = -30;
-                    break;
-                default:
-                    break;
-            }
+        this.model.position = {
+            x: 0,
+            y: 300,
+            z: 0
+        };
 
-            _this.model.rotation = {
-                x: 0,
-                y: 0,
-                z: rotation
-            };
+        switch(this.model.i) {
+            case 0:
+                this.model.rotation.z = (-9 * Math.PI) / 180;
+                this.model.position.x = 30;
+                this.model.position.y = 250;
+                break;
+            case 1:
+                this.model.rotation.z = (.5 * Math.PI) / 180;
+                this.model.position.y = 312;
+                this.model.position.x = 20;
+                break;
+            case 2:
+                this.model.rotation.z = (30 * Math.PI) / 180;
+                this.model.position.x = -20;
+                this.model. position.y = 355;
+                break;
+            case 3:
+                this.model.rotation.z = (-23 * Math.PI) / 180;
+                this.model.position.y = 245;
+                this.model.position.x = -30;
+                break;
+            default:
+                break;
+        }
 
-            _this.model.position = position;
-            _this.model.position.z = _this.position.getZ();
-
-            //TODO BUG: Remove timeout once callback is fixed
-            setTimeout(function() {
-                const options = { curve: 'outBack', duration: 500 };
-                _this.rotation.setZ(rotation, options);
-
-                _this.position.setX(position.x, options);
-                _this.position.setY(position.y, options);
-            }, 700);
-        });
+        // I want a slight delay after the app loads
+        setTimeout(function() {
+            _this.setPositionX(0, {
+                curve: Curves.easeInOut,
+                duration: 650
+            }, function() {
+                // I want a slight delay after the animation is done
+                setTimeout(function() {
+                    const options = { curve: 'outBack', duration: 500 };
+                    _this.setRotationZ(_this.model.rotation.z, options);
+                    _this.setPositionX(_this.model.position.x, options);
+                    _this.setPositionY(_this.model.position.y, options);
+                }, 75);
+            });
+        }, 250);
     }
 }

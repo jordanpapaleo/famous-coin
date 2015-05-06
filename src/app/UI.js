@@ -1,6 +1,6 @@
-const Utilities = {};
+const UI = {};
 
-Utilities.layoutColumns = function(views) {
+UI.layoutColumns = function(views) {
     let proportion = 1 / views.length;
 
     views.forEach(function(view, i) {
@@ -10,7 +10,7 @@ Utilities.layoutColumns = function(views) {
     });
 };
 
-Utilities.layoutRows = function(views) {
+UI.layoutRows = function(views) {
     let proportion = 1 / views.length;
 
     views.forEach(function(view, i) {
@@ -20,24 +20,24 @@ Utilities.layoutRows = function(views) {
     });
 };
 
-Utilities.setStyle = function(view, properties) {
+UI.setStyle = function(view, properties) {
     for(var prop in properties) {
         if(this._prefixedRules.indexOf(prop) === -1) {
-            view.el.property(prop, properties[prop]);
+            view.el.setProperty(prop, properties[prop]);
         } else {
-          this._crossBrowserStyle(view.el, prop, properties[prop]);
+            this._crossBrowserStyle(view.el, prop, properties[prop]);
         }
     }
 };
 
-Utilities._prefixedRules = ['border-radius', 'backface-visibility'];
-Utilities._browserPrefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
-Utilities._crossBrowserStyle = function(el, prop, value) {
+UI._prefixedRules = ['border-radius', 'box-shadow'];
+UI._browserPrefixes = ['-webkit-', '-moz-', '-ms-', '-o-'];
+UI._crossBrowserStyle = function(el, prop, value) {
     this._browserPrefixes.forEach(function(prefix) {
-        el.property(prefix + prop, value);
+        el.setProperty(prefix + prop, value);
     });
 
-    el.property(prop, value);
+    el.setProperty(prop, value);
 };
 
-export default Utilities;
+export default UI;

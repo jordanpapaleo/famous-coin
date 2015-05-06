@@ -28,7 +28,8 @@
         "node": true
     },
     "globals": {
-        "AudioContext": true
+        "AudioContext": true,
+        "FamousPlatform": true
     },
     "parser": "babel-eslint",
     "rules": {

@@ -1,23 +1,61 @@
-import {core, domRenderables, components} from 'famous';
-import {View} from '../shared/View';
-import Utils from '../utils/Utilities'
+import View from 'famous-creative/display/View';
 
-const EventHandler = components.EventHandler;
+const Curves = FamousPlatform.transitions.Curves;
 
 export class Hand extends View {
-    setProperties() {
-        this.size.setAbsolute(70, 75);
-        this.position.setY(296);
-        this.mountPoint.set(.5, 0);
-        this.align.set(.5, 0);
-    }
+    constructor(node, options) {
+        super(node, options);
 
-    render() {
-        this.el.attribute('src', this.model.imgPath);
-    }
+        this.setSizeMode(1, 1);
+        this.setAbsoluteSize(70, 75);
+        this.setPositionY(296);
+        this.setPositionZ(2000);
+        this.setMountPoint(.5, 0);
+        this.setAlign(.5, 0);
 
-    post() {
+        this.model = options.model;
+
+        this.createDOMElement({
+            tagName: 'img'
+        });
+
+        this.setDOMAttributes({
+            'src': this.model.imgPath
+        });
+
+        this.setEvents();
         this.startAnimation();
+    }
+
+
+    setEvents() {
+        const _this = this;
+
+        this.on('dragging', function(message) {
+            if(message === 'start') {
+                _this.stopAnimation();
+            }
+        });
+
+        this.on('resetApp', function() {
+            _this.restartAnimation();
+        });
+    }
+
+    startAnimation() {
+        this.isHalted = false;
+        this.animateHand();
+    }
+
+    stopAnimation() {
+        this.isHalted = true;
+        this.haltOpacity();
+        this.haltPosition();
+    }
+
+    restartAnimation() {
+        this.isHalted = false;
+        this.resetHand();
     }
 
     animateHand() {
@@ -28,17 +66,17 @@ export class Hand extends View {
         const _this = this;
         let duration = 1200;
 
-        this.position.setY(196, {
+        this.setPositionY(196, {
             duration,
-            curve: 'linear'
+            curve: Curves.linear
         }, function() {
             _this.resetHand();
         });
 
         // Start the opacity half way through the animation
         setTimeout(function() {
-            _this.opacity.set(0, {
-                curve: 'linear',
+            _this.setOpacity(0, {
+                curve: Curves.linear,
                 duration: duration / 2
             });
         }, duration / 2);
@@ -50,12 +88,12 @@ export class Hand extends View {
         }
 
         const _this = this;
-        this.position.setY(296, { duration: 0 }, function() {
-
+        this.setPositionY(296, {
+            duration: 0
+        }, function() {
             //TODO BUG:  Callbacks are not working correctly
             setTimeout(function() {
-                _this.opacity.set(1, { duration: 100}, function() {
-
+                _this.setOpacity(1, { duration: 100}, function() {
                     //TODO BUG:  Callbacks are not working correctly
                     // A quick pause after the animation completes
                     setTimeout(function() {
@@ -63,37 +101,6 @@ export class Hand extends View {
                     }, 200);
                 });
             }, 900);
-        });
-    }
-
-    startAnimation() {
-        this.isHalted = false;
-        this.animateHand();
-    }
-
-    stopAnimation() {
-        this.isHalted = true;
-        this.opacity.halt();
-        this.position.halt();
-    }
-
-    restartAnimation() {
-        this.isHalted = false;
-        this.resetHand();
-    }
-
-    setEvents() {
-        const _this = this;
-        this.eventHandler = new EventHandler(this.dispatch);
-
-        this.eventHandler.on('dragging', function(message) {
-            if(message.status === 'start') {
-                _this.stopAnimation();
-            }
-        });
-
-        this.eventHandler.on('resetApp', function(message) {
-            _this.restartAnimation();
         });
     }
 }
