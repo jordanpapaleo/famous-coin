@@ -713,11 +713,11 @@ export class App extends View {
 
 const rootNode   = FamousPlatform.core.Famous.createContext('body');
 let camera = new FamousPlatform.components.Camera(rootNode);
-camera.setDepth(100);
+camera.setDepth(1000);
 
 window.app = new App(rootNode.addChild(), {
     properties: {
-        '-webkit-perspective': '10000px',
-        'perspective': '10000px'
+        '-webkit-perspective': '10000',
+        'perspective': '10000'
     }
 });

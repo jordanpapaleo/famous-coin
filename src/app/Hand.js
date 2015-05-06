@@ -9,14 +9,17 @@ export class Hand extends View {
         this.setSizeMode(1, 1);
         this.setAbsoluteSize(70, 75);
         this.setPositionY(296);
-        this.setPositionZ(2000);
+        this.setPositionZ(3000);
         this.setMountPoint(.5, 0);
         this.setAlign(.5, 0);
 
         this.model = options.model;
 
         this.createDOMElement({
-            tagName: 'img'
+            tagName: 'img',
+            properties: {
+                'zIndex': 3000
+            }
         });
 
         this.setDOMAttributes({

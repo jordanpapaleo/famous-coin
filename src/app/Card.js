@@ -6,22 +6,30 @@ export class Card extends View {
         super(node, options);
         this.model = options.model;
 
+        let perspective = 1000;
+        let zTransform = this.model.i * 350;
+
         this.setSizeMode(1, 1);
         this.setAbsoluteSize(350, 220);
         this.setMountPoint(.5, 0);
         this.setAlign(.5, 0);
-        this.setOrigin(.5, .5);
+        this.setOrigin(.5, .5, .5);
         this.setScale(.5, .5, .5);
-        this.setPosition(-300, 300, this.model.i * 350);
+        this.setPosition(-300, 300, zTransform);
 
-        this.createDOMElement();
-        this.render();
-    }
 
-    render() {
+        this.createDOMElement({
+            properties: {
+                'zIndex': zTransform,
+                '-webkit-perspective': perspective,
+                '-moz-perspective': perspective,
+                'perspective': perspective
+            }
+        });
+
         this.addCardBack();
         this.addCardFront();
-        this.loadCards();
+        this.loadCard();
     }
 
     addCardBack() {
@@ -56,7 +64,7 @@ export class Card extends View {
         });
     }
 
-    loadCards() {
+    loadCard() {
         const _this = this;
 
         this.model.rotation = {
@@ -68,7 +76,7 @@ export class Card extends View {
         this.model.position = {
             x: 0,
             y: 300,
-            z: 0
+            z: this.getPositionZ()
         };
 
         switch(this.model.i) {
