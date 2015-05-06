@@ -15,8 +15,7 @@ export class Card extends View {
         this.setAlign(.5, 0);
         this.setOrigin(.5, .5, .5);
         this.setScale(.5, .5, .5);
-        this.setPosition(-300, 300, zTransform);
-
+        this.setPosition(-window.innerWidth, 300, zTransform);
 
         this.createDOMElement({
             properties: {

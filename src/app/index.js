@@ -13,8 +13,8 @@ export class App extends View {
         super(node, options);
         this.timeline = new Timeline({ timescale: 1 });
 
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(320, 568);
+        this.setSizeMode(0, 0);
+        this.setAbsoluteSize(1, 1);
         this.setMountPoint(.5, .5);
         this.setAlign(.5, .5);
 
@@ -55,7 +55,7 @@ export class App extends View {
         this.blueScreen.setSizeMode(0, 0);
         this.blueScreen.setProportionalSize(1, 1);
         this.blueScreen.setAlign(0, 0, 0);
-        this.blueScreen.setPosition(0, 580, -1000);
+        this.blueScreen.setPosition(0, window.innerHeight, -1000);
     }
 
     renderTopText() {
@@ -126,12 +126,12 @@ export class App extends View {
                 //Outer coin
                 sizeX = 90;
                 sizeY = 90;
-                posY  = 592;
+                posY  = window.innerHeight * 1.2;
             } else if(i === 1) {
                 //Inner coin
-                sizeX = 77;
-                sizeY = 77;
-                posY  = 604;
+                sizeX = 78;
+                sizeY = 78;
+                posY  = window.innerHeight * 1.4;
             }
 
             coin.setSizeMode(1, 1);
@@ -242,8 +242,6 @@ export class App extends View {
         }]);
     }
 
-
-
     set mouseMovement(position) {
         if(!position) {
             delete this.mouseProperties;
@@ -309,6 +307,7 @@ export class App extends View {
 
         this.on('mouseleave', releaseSpring);
         this.on('mouseout', releaseSpring);
+
         this.on('mousemove', function(e) {
             let offset = {
                 x: e.clientX - cardCenter.x,
@@ -319,10 +318,12 @@ export class App extends View {
             let maxOffsetY = 140;
 
             if(offset.x > -maxOffsetX && offset.x < maxOffsetX && offset.y > -maxOffsetY && offset.y < maxOffsetY) {
+
                 //We Flip the X and Y here because the card has a rotation of 90 degrees, which flips its axis
                 coinCard.setRotationY((((offset.x * Math.PI) / 3) / 180));
                 coinCard.setRotationX((((offset.y * Math.PI) / 4) / 180));
             } else {
+
                 coinCard.setRotationY(0, {
                     curve: Curves.spring,
                     duration: 1000
@@ -366,8 +367,8 @@ export class App extends View {
                 this.blueScreen.setPosition(...val)
             },
             path: [
-                [this.time.start, [0, 580]],
-                [this.time.step3, [0, 580]],
+                [this.time.start, [0, window.innerHeight]],
+                [this.time.step3, [0, window.innerHeight]],
                 [this.time.step5, [0, 0]]
             ]
         });
@@ -424,7 +425,10 @@ export class App extends View {
             let coin = this.spinningCoins[i];
 
             let startingYPos = coin.getPositionY();
-            let endingYPos = startingYPos / 2;
+            let endingYPos = window.innerHeight * .55;
+            if(i === 1) {
+                endingYPos = endingYPos + 6;
+            }
 
             this.timeline.registerPath({
                 handler: function(val) {
@@ -436,7 +440,6 @@ export class App extends View {
                     [this.time.step8, [0, endingYPos]]
                 ]
             });
-
 
             this.timeline.registerPath({
                 handler : function(time) {
@@ -469,7 +472,7 @@ export class App extends View {
             path: [
                 [this.time.start, [0, this.coin.getPositionY()]],
                 [this.time.step7, [0, this.coin.getPositionY()]],
-                [this.time.step8, [0, this.coin.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .73]]
             ]
         });
 
@@ -481,7 +484,7 @@ export class App extends View {
             path: [
                 [this.time.start, [0, this.getYours.getPositionY()]],
                 [this.time.step7, [0, this.getYours.getPositionY()]],
-                [this.time.step8, [0, this.getYours.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .8]]
             ]
         });
 
@@ -493,7 +496,7 @@ export class App extends View {
             path: [
                 [this.time.start, [0, this.preOrder.getPositionY()]],
                 [this.time.step7, [0, this.preOrder.getPositionY()]],
-                [this.time.step8, [0, this.preOrder.getPositionY() / 2]]
+                [this.time.step8, [0, window.innerHeight * .9]]
             ]
         });
 
