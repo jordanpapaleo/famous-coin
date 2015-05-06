@@ -7,7 +7,6 @@ import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
-const Camera         = FamousPlatform.components.Camera;
 
 export class App extends View {
     constructor(node, options) {
@@ -118,6 +117,11 @@ export class App extends View {
             let coin = new View(this.node.addChild());
             let sizeX, sizeY, posY;
 
+            coin.createDOMElement({
+                tagName: 'img'
+            });
+            coin.setDOMAttributes({'src': svgPaths[i]});
+
             if(i === 0) {
                 //Outer coin
                 sizeX = 90;
@@ -130,6 +134,7 @@ export class App extends View {
                 posY  = 604;
             }
 
+            coin.setSizeMode(1, 1);
             coin.setAbsoluteSize(sizeX, sizeY);
             coin.setPositionY(posY);
 
@@ -137,10 +142,7 @@ export class App extends View {
             coin.setAlign(.5, 0);
             coin.setOrigin(.5, .5);
 
-            coin.createDOMElement({
-                tagName: 'img'
-            });
-            coin.setDOMAttributes({'src': svgPaths[i]});
+
 
             this.spinningCoins.push(coin);
         }
@@ -197,6 +199,30 @@ export class App extends View {
             }
             this.timeline.set(this.currentTime, { duration });
         });
+
+        new GestureHandler(this.node,  [{
+            event: 'drag',
+            callback: (e) => {
+                let duration;
+
+                if(e.status === 'move') {
+                    this.emit('dragging', 'start');
+                    this.scrubTimelineGesture(e);
+                } else if(e.status === 'end') {
+                    if(this.currentTime > (this.time.step1 / 2)) { //Math.abs(e.centerVelocity.y) > 250  ||
+                        duration = this.time.end - this.currentTime;
+                        this.currentTime = this.time.end;
+                    } else {
+                        duration = this.currentTime;
+                        this.currentTime = 0;
+                        this.emit('resetApp', { duration });
+                    }
+
+                    this.timeline.set(this.currentTime, { duration });
+                }
+
+            }
+        }]);
     }
 
     set mouseMovement(position) {
@@ -331,11 +357,7 @@ export class App extends View {
 
         this.timeline.registerPath({
             handler: function(val) {
-                //console.log('val',val);
-                //console.log('this.topText',this.topText);
-                //console.log('pre');
-                //this.topText.setOpacity(...val);
-                //console.log('post');
+                this.topText.setOpacity([val]);
             }.bind(this),
             path: [
                 [this.time.start, 1],
@@ -622,6 +644,22 @@ export class App extends View {
         return timeSegments;
     }
 
+    scrubTimelineGesture(e) {
+        if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
+            this.currentTime += e.centerDelta.y * -4;
+        }
+
+        if(this.currentTime < 0) {
+            this.currentTime = 0;
+        }
+
+        if(this.currentTime > this.time.end) {
+            this.currentTime = this.time.end;
+        }
+
+        this.timeline.set(this.currentTime);
+    }
+
     scrubTimeline(mouseMovement) {
         // 4 is used to speed up the scrubbing rate by a factor of 4 from the gesture movement
         if(this.currentTime >= 0 && this.currentTime <= this.time.end) {
@@ -640,5 +678,13 @@ export class App extends View {
     }
 }
 
-const root = FamousPlatform.core.Famous.createContext('body');
-window.app = new App(root.addChild());
+const rootNode   = FamousPlatform.core.Famous.createContext('body');
+let camera = new FamousPlatform.components.Camera(rootNode);
+camera.setDepth(100);
+
+window.app = new App(rootNode.addChild(), {
+    properties: {
+        '-webkit-perspective': '10000px',
+        'perspective': '10000px'
+    }
+});

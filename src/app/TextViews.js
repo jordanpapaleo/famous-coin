@@ -105,7 +105,7 @@ export class PreOrder extends View {
         this.setAlign(.5, 0);
         this.setMountPoint(.5, 0);
         this.setOpacity(1);
-        this.setSizeMode(0, 0);
+        this.setSizeMode(1, 1);
         this.setAbsoluteSize(220, 40);
         this.setPositionY(1000);
     }
