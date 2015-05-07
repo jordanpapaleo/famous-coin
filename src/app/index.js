@@ -2,6 +2,7 @@ import View     from 'famous-creative/display/View';
 import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
+import {Ring}   from './Ring';
 
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
@@ -32,7 +33,6 @@ export class App extends View {
         });
 
         this.render();
-        this.initRings();
         this.setEvents();
         this.registerTimelinePaths();
     }
@@ -47,9 +47,8 @@ export class App extends View {
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
+        this.renderRings();
     }
-
-
 
     renderBlueScreen() {
         this.blueScreen = new View(this.node.addChild());
@@ -127,9 +126,11 @@ export class App extends View {
             let sizeX, sizeY, posY;
 
             coin.createDOMElement({
-                tagName: 'img'
+                tagName: 'img',
+                attributes: {
+                    'src': svgPaths[i]
+                }
             });
-            coin.setDOMAttributes({'src': svgPaths[i]});
 
             if(i === 0) {
                 //Outer coin
@@ -177,6 +178,35 @@ export class App extends View {
         });
 
         this.shimmer.setPosition(-240, -40, 10);
+    }
+
+    renderRings() {
+        this.rings = [];
+
+        for(let i = 0; i < 20; i++) {
+            this.rings.push(new Ring(this.node.addChild(), {
+
+            }));
+        }
+    }
+
+    loadRings() {
+        this.rings.forEach(function(ring, i) {
+            let currentTime = Math.random() * (1000 - 750) + 750;
+
+            ring.setOpacity(1);
+            ring.setPositionX(ring.model.positionX, {
+                duration: currentTime,
+                curve: Curves.easeOut
+            });
+
+            ring.setPositionY(ring.model.positionY, {
+                duration: currentTime,
+                curve: Curves.easeOut
+            }, function() {
+                ring.sink();
+            });
+        });
     }
 
     translateShimmer() {
@@ -286,66 +316,6 @@ export class App extends View {
         return this.mouseProperties;
     }
 
-    initRings() {
-        this.rings = [];
-
-        for(let i = 0; i < 20; i++) {
-            let ring = new View(this.node.addChild());
-            let ringSize = this.getRingSize();
-            let ringColor = this.getRingColors();
-
-            ring.setSizeModeAbsolute();
-            ring.setOrigin(.5, .5);
-            ring.setAlign(.5, .5);
-            ring.setMountPoint(.5, .5);
-            ring.setOpacity(0);
-
-            console.log('ringSize',ringSize);
-
-            ring.setAbsoluteSize(50 * ringSize, 50 * ringSize);
-
-            ring.createDOMElement({
-                properties: {
-                    width: '100%',
-                    height: '100%',
-                    borderColor: ringColor,
-                    borderRadius: '50%',
-                    borderStyle: 'solid',
-                    borderWidth: ringSize
-                }
-            });
-
-            this.rings.push(ring);
-        }
-    }
-
-    loadRings() {
-        console.log('here');
-        this.rings.forEach(function(ring, i) {
-            const xMax = window.innerWidth / 2;
-            const yMax = window.innerHeight / 2;
-            let x = Math.random() * (xMax * 2) - xMax;
-            let y = Math.random() * (yMax * 2) - yMax;
-
-            ring.setOpacity(1);
-
-            ring.setPosition(x, y, 0, {
-                duration: 500,
-                curve: Curves.easeOut
-            });
-        });
-    }
-
-    getRingColors() {
-        const colors = ['#329978', '#0089e0', '#3980a8','#da695b'];
-        return colors[Math.floor(Math.random() * colors.length)]
-    }
-
-    getRingSize() {
-        const ringSizes = [1, 2, 3];
-        return ringSizes[Math.floor(Math.random() * ringSizes.length)];
-    }
-
     addCoinSpringEvent() {
         const _this = this;
         const coinCard = _this.cards[_this.cards.length - 1];
@@ -435,13 +405,13 @@ export class App extends View {
         this.time.step8 = this.time.step7 + 1000;  // Stage two done: Tag line and coin card are moving up and out
         this.time.end   = this.time.step8 + 1000;  // Finis
 
-        /*--------------------- BUBBLES  ---------------------*/
-        let initializedBubbles = false;
+        /*--------------------- RINGS  ---------------------*/
+        let initializedRings = false;
         this.timeline.registerPath({
             handler: (time) => {
-                if(time >= this.time.step3 && !initializedBubbles) {
+                if(time >= this.time.step3 && !initializedRings) {
                     this.loadRings();
-                    initializedBubbles = true;
+                    initializedRings = true;
                 }
             },
             path: [
@@ -630,7 +600,6 @@ export class App extends View {
                     this.addCoinSpringEvent();
                     this.addGyroscopeEvent();
                     this.translateShimmer();
-
                 }
             },
             path: [
