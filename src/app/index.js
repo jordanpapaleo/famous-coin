@@ -1,4 +1,5 @@
 import View     from 'famous-creative/display/View';
+import LightModifier     from 'famous-creative/display/LightModifier';
 import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
@@ -7,6 +8,13 @@ import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
+
+const Famous = FamousPlatform.core.Famous;
+const Color = FamousPlatform.utilities.Color;
+const Geometry = FamousPlatform.webglGeometries.Tetrahedron;
+
+const speed = Math.PI / 100;
+const revolution = Math.PI * 2;
 
 export class App extends View {
     constructor(node, options) {
@@ -17,10 +25,10 @@ export class App extends View {
         this.setAbsoluteSize(1, 1);
         this.setMountPoint(.5, .5);
         this.setAlign(.5, .5);
+        //this.glStuff();
 
         this.createDOMElement({
             properties: {
-                'border': '1px solid black',
                 'overflow': 'hidden'
             }
         });
@@ -29,6 +37,55 @@ export class App extends View {
         this.setEvents();
         this.registerTimelinePaths();
     }
+
+    glStuff() {
+        this.testGLView(this.node);
+        this.testLightModifier(this.node);
+    }
+
+    loadGL() {
+        /* 1. Randomly send out rings from the point of impact behind the card
+        *       - Use 1 of 4 random colors green: #329978 , blue #0089e0, dark blue: #3980a8, red: #da695b
+        *
+        *
+        *
+        * */
+
+    }
+
+
+    testGLView(node) {
+        this.angle = 0;
+        this.gl = new View(node.addChild());
+        this.gl
+            .setSizeModeAbsolute()
+            .setGeometry(new Geometry())
+            .setBaseColor(new Color('#00ff99'))
+            .setAbsoluteSize(200, 200, 200)
+            //.setPosition(0, 0, 0)
+            .setOrigin(0.5, 0.5, 0.5)
+            .setAlign(0.5, 0.5, 0.5)
+            .setMountPoint(0.5, 0.5, 0.5)
+            .onUpdate = () => {
+            this.angle += speed;
+            if (this.angle >= revolution || this.angle <= -revolution) this.angle = 0;
+            this.gl.setRotationY(this.angle);
+            this.gl.setRotationX(this.angle);
+            this.gl.setRotationZ(this.angle);
+            Famous.requestUpdateOnNextTick(this.gl);
+        };
+
+        Famous.requestUpdateOnNextTick(this.gl);
+    }
+
+    testLightModifier(node) {
+        this.pointLight = new LightModifier(node.addChild(), {
+            type: 'ambient',
+            color: new Color('#fff'),
+            position: [500, -500, 12000]
+        });
+    }
+
 
     render() {
         this.renderBlueScreen();
@@ -40,6 +97,7 @@ export class App extends View {
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
+
     }
 
     renderBlueScreen() {
@@ -126,12 +184,12 @@ export class App extends View {
                 //Outer coin
                 sizeX = 90;
                 sizeY = 90;
-                posY  = window.innerHeight * 1.2;
+                posY  = window.innerHeight * 1.1;
             } else if(i === 1) {
                 //Inner coin
                 sizeX = 78;
                 sizeY = 78;
-                posY  = window.innerHeight * 1.4;
+                posY  = window.innerHeight * 1.1;
             }
 
             coin.setSizeMode(1, 1);
@@ -170,13 +228,16 @@ export class App extends View {
         this.shimmer.setPosition(-240, -40, 10);
     }
 
-    shimmyShimmer() {
+    translateShimmer() {
         setTimeout(function() {
             this.shimmer.setPositionX(240, {
                 duration: 1500,
                 curve: Curves.easeInOut
-            });
-        }.bind(this), 500);
+            }, function() {
+                this.shimmer.setPositionX(-240);
+                this.translateShimmer();
+            }.bind(this));
+        }.bind(this), 3000);
     }
 
     setEvents() {
@@ -360,8 +421,21 @@ export class App extends View {
         this.time.step5 = this.time.step4 + 1000; // Coin card scale and flip apex
         this.time.step6 = this.time.step5 + 250;  // Coin card scale and flip almost done
         this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
-        this.time.step8 = this.time.step7 + 500;  // Stage two done: Tag line and coin card are moving up and out
-        this.time.end   = this.time.step8 + 500;  // Finis
+        this.time.step8 = this.time.step7 + 1000;  // Stage two done: Tag line and coin card are moving up and out
+        this.time.end   = this.time.step8 + 1000;  // Finis
+
+        /*--------------------- GL  ---------------------*/
+        this.timeline.registerPath({
+            handler: (time) => {
+                if(time >= this.time.step3) {
+                    this.loadGL();
+                }
+            },
+            path: [
+                [0, 0],
+                [this.time.end, this.time.end]
+            ]
+        });
 
         /*--------------------- BLUE SCREEN ---------------------*/
         this.timeline.registerPath({
@@ -418,7 +492,7 @@ export class App extends View {
                 [this.time.step4, [0, this.tagLine.getPositionY()]],
                 [this.time.step6, [0, 50]], // The element is 100px tall, this puts it out of view
                 [this.time.step7, [0, 40]],
-                [this.time.step8, [0, -110]]
+                [this.time.step8 - 500, [0, -200]]
             ]
         });
 
@@ -427,7 +501,7 @@ export class App extends View {
             let coin = this.spinningCoins[i];
 
             let startingYPos = coin.getPositionY();
-            let endingYPos = window.innerHeight * .55;
+            let endingYPos = window.innerHeight - 265;
             if(i === 1) {
                 endingYPos = endingYPos + 6;
             }
@@ -439,26 +513,26 @@ export class App extends View {
                 path: [
                     [this.time.start, [0, startingYPos]],
                     [this.time.step7, [0, startingYPos]],
-                    [this.time.step8, [0, endingYPos]]
+                    [this.time.step8, [0, endingYPos], Curves.easeOut]
                 ]
             });
 
             this.timeline.registerPath({
-                handler: function(time) {
+                handler: (time) => {
                     if(time >= this.time.step7) {
-                        if(i === 0) {
-                            coin.setRotation(540 * Math.PI / 180, 720 * Math.PI / 180, 0, {
+                        if(i === 0) { // Outer ring
+                            coin.setRotation(540 * Math.PI / 180, 900 * Math.PI / 180, 0, {
                                 curve: Curves.easeOut,
                                 duration: 3000
                             });
-                        } else if(i === 1) {
-                            coin.setRotation(-1080 * Math.PI / 180, -1260 * Math.PI / 180, 0, {
+                        } else if(i === 1) { // Inner ring
+                            coin.setRotation(-1080 * Math.PI / 180, -1440 * Math.PI / 180, 0, {
                                 curve: Curves.easeOut,
                                 duration: 3000
                             });
                         }
                     }
-                }.bind(this),
+                },
                 path: [
                     [0, 0],
                     [this.time.end, this.time.end]
@@ -468,37 +542,37 @@ export class App extends View {
 
         /*--------------------- COIN TEXT ---------------------*/
         this.timeline.registerPath({
-            handler: function(val) {
+            handler: (val) => {
                 this.coin.setPosition(...val);
-            }.bind(this),
+            },
             path: [
                 [this.time.start, [0, this.coin.getPositionY()]],
-                [this.time.step7, [0, this.coin.getPositionY()]],
-                [this.time.step8, [0, window.innerHeight * .73]]
+                [this.time.step7 + 50, [0, this.coin.getPositionY()]],
+                [this.time.step8 + 50, [0, window.innerHeight - 175], Curves.easeOut]
             ]
         });
 
         /*--------------------- GET YOURS ---------------------*/
         this.timeline.registerPath({
-            handler: function(val) {
+            handler: (val) => {
                 this.getYours.setPosition(...val);
-            }.bind(this),
+            },
             path: [
                 [this.time.start, [0, this.getYours.getPositionY()]],
-                [this.time.step7, [0, this.getYours.getPositionY()]],
-                [this.time.step8, [0, window.innerHeight * .8]]
+                [this.time.step7 + 75, [0, this.getYours.getPositionY()]],
+                [this.time.step8 + 75, [0, window.innerHeight - 120], Curves.easeOut]
             ]
         });
 
         /*--------------------- PRE ORDER ---------------------*/
         this.timeline.registerPath({
-            handler: function(val) {
+            handler: (val) => {
                 this.preOrder.setPosition(...val);
-            }.bind(this),
+            },
             path: [
                 [this.time.start, [0, this.preOrder.getPositionY()]],
-                [this.time.step7, [0, this.preOrder.getPositionY()]],
-                [this.time.step8, [0, window.innerHeight * .9]]
+                [this.time.step7 + 200, [0, this.preOrder.getPositionY()]],
+                [this.time.step8 + 200, [0, window.innerHeight - 65], Curves.easeOut]
             ]
         });
 
@@ -538,14 +612,14 @@ export class App extends View {
         }
 
         this.timeline.registerPath({
-            handler: function(time) {
+            handler: (time) => {
                 if(time >= this.time.end) {
                     this.addCoinSpringEvent();
                     this.addGyroscopeEvent();
-                    this.shimmyShimmer();
+                    this.translateShimmer();
 
                 }
-            }.bind(this),
+            },
             path: [
                 [0, 0],
                 [this.time.end, this.time.end]
@@ -673,7 +747,7 @@ export class App extends View {
                     [this.time.step4, [0, 300, 0]],
                     [this.time.step5, [0, 200, 0]],
                     [this.time.step7, [0, 200, 0]],
-                    [this.time.step8, [0, 50, 0]]
+                    [this.time.step8 - 500, [0, 50, 0], Curves.easeOut]
                 ];
                 break;
         }
@@ -717,11 +791,10 @@ export class App extends View {
 
 const rootNode   = FamousPlatform.core.Famous.createContext('body');
 let camera = new FamousPlatform.components.Camera(rootNode);
-camera.setDepth(1000);
+camera.setDepth(20000);
 
 window.app = new App(rootNode.addChild(), {
     properties: {
-        '-webkit-perspective': '10000',
-        'perspective': '10000'
+
     }
 });

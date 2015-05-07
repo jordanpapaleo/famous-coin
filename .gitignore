@@ -2,7 +2,3 @@ public/*.bundle.js
 node_modules
 npm-debug.log
 .DS_Store
-
-docs
-
-node_modules-020

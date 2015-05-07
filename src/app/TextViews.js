@@ -62,7 +62,7 @@ export class Coin extends View {
         this.setProportionalSize(1, null);
         this.setAbsoluteSize(null, 50);
         this.setOpacity(1);
-        this.setPositionY(window.innerHeight * 1.2);
+        this.setPositionY(window.innerHeight * 1.3);
     }
 }
 
@@ -84,7 +84,7 @@ export class GetYours extends View {
         this.setProportionalSize(1, null);
         this.setAbsoluteSize(null, 50);
         this.setOpacity(1);
-        this.setPositionY(window.innerHeight * 2);
+        this.setPositionY(window.innerHeight * 1.4);
     }
 }
 
@@ -113,6 +113,6 @@ export class PreOrder extends View {
         this.setOpacity(1);
         this.setSizeMode(1, 1);
         this.setAbsoluteSize(220, 40);
-        this.setPositionY(window.innerHeight * 3);
+        this.setPositionY(window.innerHeight * 1.5);
     }
 }

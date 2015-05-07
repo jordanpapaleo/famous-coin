@@ -42,7 +42,7 @@
   "license": "All rights reserved",
   "dependencies": {
     "brfs": "^1.1.1",
-    "famous-creative": "git+ssh://git@github.famo.us:creative/famous-creative#0.2.4",
+    "famous-creative": "git+ssh://git@github.famo.us:creative/famous-creative#0.2.8",
     "less": "^2.5.0"
   }
 }
