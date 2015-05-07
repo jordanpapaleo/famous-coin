@@ -1,5 +1,4 @@
 import View     from 'famous-creative/display/View';
-import LightModifier     from 'famous-creative/display/LightModifier';
 import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
@@ -25,7 +24,6 @@ export class App extends View {
         this.setAbsoluteSize(1, 1);
         this.setMountPoint(.5, .5);
         this.setAlign(.5, .5);
-        //this.glStuff();
 
         this.createDOMElement({
             properties: {
@@ -34,58 +32,10 @@ export class App extends View {
         });
 
         this.render();
+        this.initRings();
         this.setEvents();
         this.registerTimelinePaths();
     }
-
-    glStuff() {
-        this.testGLView(this.node);
-        this.testLightModifier(this.node);
-    }
-
-    loadGL() {
-        /* 1. Randomly send out rings from the point of impact behind the card
-        *       - Use 1 of 4 random colors green: #329978 , blue #0089e0, dark blue: #3980a8, red: #da695b
-        *
-        *
-        *
-        * */
-
-    }
-
-
-    testGLView(node) {
-        this.angle = 0;
-        this.gl = new View(node.addChild());
-        this.gl
-            .setSizeModeAbsolute()
-            .setGeometry(new Geometry())
-            .setBaseColor(new Color('#00ff99'))
-            .setAbsoluteSize(200, 200, 200)
-            //.setPosition(0, 0, 0)
-            .setOrigin(0.5, 0.5, 0.5)
-            .setAlign(0.5, 0.5, 0.5)
-            .setMountPoint(0.5, 0.5, 0.5)
-            .onUpdate = () => {
-            this.angle += speed;
-            if (this.angle >= revolution || this.angle <= -revolution) this.angle = 0;
-            this.gl.setRotationY(this.angle);
-            this.gl.setRotationX(this.angle);
-            this.gl.setRotationZ(this.angle);
-            Famous.requestUpdateOnNextTick(this.gl);
-        };
-
-        Famous.requestUpdateOnNextTick(this.gl);
-    }
-
-    testLightModifier(node) {
-        this.pointLight = new LightModifier(node.addChild(), {
-            type: 'ambient',
-            color: new Color('#fff'),
-            position: [500, -500, 12000]
-        });
-    }
-
 
     render() {
         this.renderBlueScreen();
@@ -97,8 +47,9 @@ export class App extends View {
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
-
     }
+
+
 
     renderBlueScreen() {
         this.blueScreen = new View(this.node.addChild());
@@ -335,6 +286,66 @@ export class App extends View {
         return this.mouseProperties;
     }
 
+    initRings() {
+        this.rings = [];
+
+        for(let i = 0; i < 20; i++) {
+            let ring = new View(this.node.addChild());
+            let ringSize = this.getRingSize();
+            let ringColor = this.getRingColors();
+
+            ring.setSizeModeAbsolute();
+            ring.setOrigin(.5, .5);
+            ring.setAlign(.5, .5);
+            ring.setMountPoint(.5, .5);
+            ring.setOpacity(0);
+
+            console.log('ringSize',ringSize);
+
+            ring.setAbsoluteSize(50 * ringSize, 50 * ringSize);
+
+            ring.createDOMElement({
+                properties: {
+                    width: '100%',
+                    height: '100%',
+                    borderColor: ringColor,
+                    borderRadius: '50%',
+                    borderStyle: 'solid',
+                    borderWidth: ringSize
+                }
+            });
+
+            this.rings.push(ring);
+        }
+    }
+
+    loadRings() {
+        console.log('here');
+        this.rings.forEach(function(ring, i) {
+            const xMax = window.innerWidth / 2;
+            const yMax = window.innerHeight / 2;
+            let x = Math.random() * (xMax * 2) - xMax;
+            let y = Math.random() * (yMax * 2) - yMax;
+
+            ring.setOpacity(1);
+
+            ring.setPosition(x, y, 0, {
+                duration: 500,
+                curve: Curves.easeOut
+            });
+        });
+    }
+
+    getRingColors() {
+        const colors = ['#329978', '#0089e0', '#3980a8','#da695b'];
+        return colors[Math.floor(Math.random() * colors.length)]
+    }
+
+    getRingSize() {
+        const ringSizes = [1, 2, 3];
+        return ringSizes[Math.floor(Math.random() * ringSizes.length)];
+    }
+
     addCoinSpringEvent() {
         const _this = this;
         const coinCard = _this.cards[_this.cards.length - 1];
@@ -424,11 +435,13 @@ export class App extends View {
         this.time.step8 = this.time.step7 + 1000;  // Stage two done: Tag line and coin card are moving up and out
         this.time.end   = this.time.step8 + 1000;  // Finis
 
-        /*--------------------- GL  ---------------------*/
+        /*--------------------- BUBBLES  ---------------------*/
+        let initializedBubbles = false;
         this.timeline.registerPath({
             handler: (time) => {
-                if(time >= this.time.step3) {
-                    this.loadGL();
+                if(time >= this.time.step3 && !initializedBubbles) {
+                    this.loadRings();
+                    initializedBubbles = true;
                 }
             },
             path: [
