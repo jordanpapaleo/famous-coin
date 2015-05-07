@@ -3,18 +3,11 @@ import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
 import {Ring}   from './Ring';
-
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
-
-const Famous = FamousPlatform.core.Famous;
-const Color = FamousPlatform.utilities.Color;
-const Geometry = FamousPlatform.webglGeometries.Tetrahedron;
-
-const speed = Math.PI / 100;
-const revolution = Math.PI * 2;
+const Color          = FamousPlatform.utilities.Color;
 
 export class App extends View {
     constructor(node, options) {
@@ -184,17 +177,20 @@ export class App extends View {
         this.rings = [];
 
         for(let i = 0; i < 20; i++) {
-            this.rings.push(new Ring(this.node.addChild(), {
-
-            }));
+            this.rings.push(new Ring(this.node.addChild()));
         }
     }
 
     loadRings() {
         this.rings.forEach(function(ring, i) {
-            let currentTime = Math.random() * (1000 - 750) + 750;
+            let currentTime = Math.random() * (1000 - 500) + 500;
 
             ring.setOpacity(1);
+            ring.setScale(1, 1, 1, {
+                duration: currentTime,
+                curve: Curves.linear
+            });
+
             ring.setPositionX(ring.model.positionX, {
                 duration: currentTime,
                 curve: Curves.easeOut

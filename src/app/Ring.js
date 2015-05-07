@@ -1,6 +1,5 @@
 import View     from 'famous-creative/display/View';
-
-const Curves         = FamousPlatform.transitions.Curves;
+const Curves    = FamousPlatform.transitions.Curves;
 
 export class Ring extends View {
     constructor(node, options) {
@@ -11,11 +10,12 @@ export class Ring extends View {
 
         this.model = {};
 
-        this.setOrigin(.5, 0);
         this.setAlign(.5, 0);
-        this.setMountPoint(.5, .5);
+        this.setMountPoint(.5, 0);
+        this.setOrigin(.5, 0);
         this.setPositionY(175);
         this.setOpacity(0);
+        this.setScale(.25, .25);
         this.setSizeModeAbsolute();
         this.setAbsoluteSize(50 * ringSize, 50 * ringSize);
 
@@ -38,6 +38,10 @@ export class Ring extends View {
         const yMax = window.innerHeight / 2;
         this.model.positionX = Math.random() * (xMax * 2) - xMax;
         this.model.positionY  = Math.random() * (yMax * 2) - yMax;
+
+        if(this.model.positionY < 0) {
+            this.model.positionY += 175;
+        }
     }
 
     _getRingColors() {
@@ -51,16 +55,8 @@ export class Ring extends View {
     }
 
     exit() {
-        /*this.model.endpointX = 0;
-        this.model.endpointY = 0;
-        this.model.sizeX = 0;
-        this.model.sizeY = 0;*/
-
         let xPos = 0;
         let yPos = window.innerHeight - 225;
-
-        console.log(xPos,yPos);
-
         this.setDOMProperties({
             borderColor: 'black'
         });
@@ -112,9 +108,9 @@ export class Ring extends View {
         }, function() {
             if(this.swayRunningDuration < this.sinkDuration) {
                 if(x < this.x) {
-                    this._sway(x + 10);
+                    this._sway(x + 5);
                 } else {
-                    this._sway(x - 10);
+                    this._sway(x - 5);
                 }
             }
         }.bind(this));
