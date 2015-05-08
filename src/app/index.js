@@ -3,7 +3,6 @@ import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
 import {Ring}   from './Ring';
-import {Phy}    from './Phy';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
@@ -191,8 +190,6 @@ export class App extends View {
         } else {
             bubbleCount = 30;
         }
-
-        bubbleCount = 1;
 
         let collision = [];
 

@@ -4,6 +4,8 @@ import Physics  from './PhysicsService';
 const Curves           = FamousPlatform.transitions.Curves;
 const PhysicsEngine    = FamousPlatform.physics.PhysicsEngine;
 const Famous           = FamousPlatform.core.Famous;
+const GestureHandler   = FamousPlatform.components.GestureHandler;
+
 
 //Physics Components
 const Box              = FamousPlatform.physics.Box;
@@ -48,6 +50,12 @@ export class Ring extends View {
 
         this._setRingPosition();
 
+        this.setEvents();
+
+        this._initPhysics();
+    }
+
+    setEvents() {
         this.on('risingComplete', () => {
             this.setDOMProperties({
                 borderColor: 'black'
@@ -86,18 +94,28 @@ export class Ring extends View {
             }
         }.bind(this));
 
-        this.blar = false;
-        this._initPhysics();
+        this.on('mousedown', () => {
+            console.log('here');
+            this.pop();
+        });
+
+        this.gestures = new GestureHandler(this.node, [{
+            event: 'tap',
+            callback: (e) => {
+                this.pop();
+            }
+        }]);
     }
 
     testPhysics() {
-        this.blar = true;
+        this.isGravityApplied = true;
 
         this.anchor.set(this.model.positionX, this.model.positionY);
     }
 
     _initPhysics() {
         this.simulation = Physics.getSimulation();
+        this.isGravityApplied = false;
 
         var updater = {
             onUpdate: (t) => {
@@ -129,7 +147,7 @@ export class Ring extends View {
     }
 
     _update() {
-        if(this.blar) {
+        if(this.isGravityApplied) {
             if(!this.gravityX || this.gravityX === -10) {
                 this.gravityX = 10;
             } else {
@@ -192,6 +210,22 @@ export class Ring extends View {
         return ringSizes[Math.floor(Math.random() * ringSizes.length)];
     }
 
+    pop() {
+        let duration = 100;
+
+        this.setOpacity(0, {
+            duration: 75
+        });
+
+        this.setScale(1.2, 1.2, 1.2, {
+            duration: duration / 2
+        }, function() {
+            this.setScale(0, 0, 0, {
+                duration: duration / 2
+            });
+        }.bind(this));
+    }
+
     exit() {
         let xPos = 0;
         let yPos = window.innerHeight - 225;
@@ -217,7 +251,7 @@ export class Ring extends View {
         }.bind(this));
     }
 
-    morphColor() {
+/*    morphColor() {
 
     }
 
@@ -251,22 +285,7 @@ export class Ring extends View {
                 }
             }
         }.bind(this));
-    }
-
-    pop() {
-        let duration = 100;
+    }*/
 
 
-        this.setOpacity(0, {
-            duration: 75
-        });
-
-        this.setScale(1.2, 1.2, 1.2, {
-            duration: duration / 2
-        }, function() {
-            this.setScale(0, 0, 0, {
-                duration: duration / 2
-            });
-        }.bind(this));
-    }
 }
