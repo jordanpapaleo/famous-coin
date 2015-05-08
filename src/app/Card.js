@@ -6,7 +6,7 @@ export class Card extends View {
         super(node, options);
         this.model = options.model;
 
-        let perspective = 1000;
+        let perspective = 600;
         let zTransform = this.model.i * 350;
 
         this.setSizeMode(1, 1);
@@ -26,7 +26,7 @@ export class Card extends View {
             }
         });
 
-        this.addCardBack();
+        // this.addCardBack();
         this.addCardFront();
         this.loadCard();
     }
@@ -55,7 +55,7 @@ export class Card extends View {
             tagName: 'img',
             classes: ['card-img-front'],
             properties: {
-                'backface-visibility': 'hidden'
+                // 'backface-visibility': 'hidden'
             }
         });
         cardFront.setDOMAttributes({
