@@ -31,6 +31,19 @@ export class Ring extends View {
         });
 
         this._setRingPosition();
+
+        this.on('risingTide', function(message) {
+            let yPos = this.getPositionY();
+            let size = this.getSize();
+
+            let bottomEdge = yPos + size[1];
+
+            if(bottomEdge > message) {
+                this.setDOMProperties({
+                    borderColor: 'black'
+                });
+            }
+        }.bind(this));
     }
 
     _setRingPosition() {

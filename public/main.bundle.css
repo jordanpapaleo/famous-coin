@@ -20,16 +20,21 @@ body {
 }
 .ring {
   border-radius: 50%;
+  border-color: black;
+  border-style: solid;
 }
-.ring .ring-sm {
+.ring.sm {
   width: 50px;
   height: 50px;
+  border-width: 1px;
 }
-.ring .ring-md {
+.ring.md {
   width: 100px;
   height: 100px;
+  border-width: 2px;
 }
-.ring .ring-lg {
+.ring.lg {
   width: 200px;
   height: 200px;
+  border-width: 3px;
 }

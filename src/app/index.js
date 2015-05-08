@@ -176,7 +176,23 @@ export class App extends View {
     renderRings() {
         this.rings = [];
 
-        for(let i = 0; i < 20; i++) {
+        let bubbleCount = 0;
+        let windowWidth =  window.innerWidth;
+
+        if(windowWidth < 320) {
+            bubbleCount = 5;
+        } else if(windowWidth < 428) {
+            bubbleCount = 10;
+        } else if(windowWidth < 768) {
+            bubbleCount = 15;
+        } else if(windowWidth < 992) {
+            bubbleCount = 20;
+        } else {
+            bubbleCount = 30;
+        }
+
+
+        for(let i = 0; i < bubbleCount; i++) {
             this.rings.push(new Ring(this.node.addChild()));
         }
     }
@@ -425,6 +441,19 @@ export class App extends View {
                 [this.time.start, [0, window.innerHeight]],
                 [this.time.step3, [0, window.innerHeight]],
                 [this.time.step5, [0, 0]]
+            ]
+        });
+
+
+        this.timeline.registerPath({
+            handler: (time) => {
+                if(time >= this.time.step3 && time <= this.time.step5) {
+                    this.emit('risingTide', this.blueScreen.getPositionY());
+                }
+            },
+            path: [
+                [0, 0],
+                [this.time.end, this.time.end]
             ]
         });
 
