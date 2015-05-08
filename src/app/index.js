@@ -3,6 +3,7 @@ import Timeline from 'famous-creative/animation/Timeline';
 import {Hand}   from './Hand';
 import {Card}   from './Card';
 import {Ring}   from './Ring';
+import {Phy}    from './Phy';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
@@ -191,18 +192,40 @@ export class App extends View {
             bubbleCount = 30;
         }
 
+        bubbleCount = 1;
+
+        let collision = [];
 
         for(let i = 0; i < bubbleCount; i++) {
-            this.rings.push(new Ring(this.node.addChild()));
+            let ring = new Ring(this.node.addChild());
+            collision.push(ring.box);
+            this.rings.push(ring);
         }
+
+        /*let simulation = PhysicsEngine.getSimulation();
+        simulation.add(collision);*/
+
+        setTimeout(function() {
+            this.loadRings()
+        }.bind(this), 500)
     }
 
     loadRings() {
+        this.rings.forEach(function(ring) {
+            ring.setOpacity(1);
+            ring.setScale(1, 1, 1, {
+                duration: 750,
+            });
+            ring.testPhysics();
+        });
+    }
+
+    loadRings2() {
         this.rings.forEach(function(ring, i) {
             let currentTime = Math.random() * (1000 - 500) + 500;
 
             ring.setOpacity(1);
-            ring.setScale(1, 1, 1, {
+            ring.setScale(.5, .5, .5, {
                 duration: currentTime,
                 curve: Curves.linear
             });
@@ -444,11 +467,19 @@ export class App extends View {
             ]
         });
 
-
         this.timeline.registerPath({
             handler: (time) => {
+                if(!this.hasOwnProperty('hasRisen')) {
+                    this.hasRisen = false;
+                }
+
                 if(time >= this.time.step3 && time <= this.time.step5) {
                     this.emit('risingTide', this.blueScreen.getPositionY());
+                }
+
+                if(time >= this.time.step5 && !this.hasRisen) {
+                    this.hasRisen = true;
+                    this.emit('risingComplete');
                 }
             },
             path: [

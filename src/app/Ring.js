@@ -1,49 +1,174 @@
 import View     from 'famous-creative/display/View';
-const Curves    = FamousPlatform.transitions.Curves;
+import Physics  from './PhysicsService';
+
+const Curves           = FamousPlatform.transitions.Curves;
+const PhysicsEngine    = FamousPlatform.physics.PhysicsEngine;
+const Famous           = FamousPlatform.core.Famous;
+
+//Physics Components
+const Box              = FamousPlatform.physics.Box;
+const Collision        = FamousPlatform.physics.Collision;
+const Spring           = FamousPlatform.physics.Spring;
+const RotationalSpring = FamousPlatform.physics.RotationalSpring;
+const Gravity1D        = FamousPlatform.physics.Gravity1D;
+const Gravity3D        = FamousPlatform.physics.Gravity3D;
+const Quaternion       = FamousPlatform.math.Quaternion;
+const Vec3             = FamousPlatform.math.Vec3;
 
 export class Ring extends View {
     constructor(node, options) {
         super(node);
 
-        let ringSize = this._getRingSize();
-        let ringColor = this._getRingColors();
+        this.model = {
+            ringSize: this._getRingSize(),
+            ringColor: this._getRingColors()
+        };
 
-        this.model = {};
+        this.model.size = 50 * this.model.ringSize;
 
         this.setAlign(.5, 0);
         this.setMountPoint(.5, 0);
-        this.setOrigin(.5, 0);
+        this.setOrigin(.5, .5);
         this.setPositionY(175);
         this.setOpacity(0);
         this.setScale(.25, .25);
         this.setSizeModeAbsolute();
-        this.setAbsoluteSize(50 * ringSize, 50 * ringSize);
+        this.setAbsoluteSize(this.model.size, this.model.size);
 
         this.createDOMElement({
             properties: {
                 width: '100%',
                 height: '100%',
-                borderColor: ringColor,
+                borderColor: this.model.ringColor,
                 borderRadius: '50%',
                 borderStyle: 'solid',
-                borderWidth: ringSize
+                borderWidth: this.model.ringSize
             }
         });
 
         this._setRingPosition();
 
+        this.on('risingComplete', () => {
+            this.setDOMProperties({
+                borderColor: 'black'
+            });
+        });
+
         this.on('risingTide', function(message) {
+            if(!this.hasOwnProperty('hasChanged')) {
+                this.hasChanged = false;
+            }
+
+            if(this.hasChanged) {
+                return;
+            }
+
             let yPos = this.getPositionY();
             let size = this.getSize();
 
             let bottomEdge = yPos + size[1];
 
+
             if(bottomEdge > message) {
+                this.hasChanged = true;
+
                 this.setDOMProperties({
                     borderColor: 'black'
                 });
+
+                this.setScale(1.05, 1.05, 1.05, {
+                    duration: 100
+                }, function() {
+                    this.setScale(.95, .95, .95, {
+                        duration: 100
+                    });
+                }.bind(this));
             }
         }.bind(this));
+
+        this.blar = false;
+        this._initPhysics();
+    }
+
+    testPhysics() {
+        this.blar = true;
+
+        this.anchor.set(this.model.positionX, this.model.positionY);
+    }
+
+    _initPhysics() {
+        this.simulation = Physics.getSimulation();
+
+        var updater = {
+            onUpdate: (t) => {
+                this.simulation.update(t);
+                this._update();
+
+                Famous.requestUpdateOnNextTick(updater);
+            }
+        };
+
+        Famous.requestUpdateOnNextTick(updater);
+
+        //Mass will only have an effect if there is a force
+        this.box = new Box({
+            mass: 100,
+            size: [this.model.size, this.model.size, 0]
+        });
+
+        //
+        this.anchor = new Vec3(0, 175, 0);
+
+        this.spring = new Spring(null, this.box, {
+            period: 1,
+            dampingRatio: .9,
+            anchor: this.anchor
+        });
+
+        this.simulation.add([this.box, this.spring, this.collision]);
+    }
+
+    _update() {
+        if(this.blar) {
+            if(!this.gravityX || this.gravityX === -10) {
+                this.gravityX = 10;
+            } else {
+                this.gravityX = -10
+            }
+
+            if(!this.gravityZ || this.gravityZ === -10) {
+                this.gravityZ = 10;
+            } else {
+                this.gravityZ = -10
+            }
+
+            if(!this.gravityY) {
+                let yGravity = 0;
+
+                switch(this.model.ringSize) {
+                    case 1:
+                        yGravity = this.model.ringSize;
+                        break;
+                    case 2:
+                        yGravity = this.model.ringSize * 3;
+                        break;
+                    case 3:
+                        yGravity = this.model.ringSize * 8;
+                        break;
+                }
+
+                this.gravityY = Math.random() * yGravity + 1;
+            }
+
+            let physicsTransform = this.simulation.getTransform(this.box);
+            this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[3]);
+
+            this.gravity = new Gravity1D([this.box], {
+                acceleration: new Vec3(this.gravityX, this.gravityY, this.gravityZ)
+            });
+
+            this.simulation.add(this.gravity);
+        }
     }
 
     _setRingPosition() {
@@ -108,7 +233,6 @@ export class Ring extends View {
             duration: this.sinkDuration
         }, function() {
             this.exit();
-            //setTimeout(this.exit, Math.random() * (500))
         }.bind(this));
     }
 
@@ -130,6 +254,19 @@ export class Ring extends View {
     }
 
     pop() {
+        let duration = 100;
 
+
+        this.setOpacity(0, {
+            duration: 75
+        });
+
+        this.setScale(1.2, 1.2, 1.2, {
+            duration: duration / 2
+        }, function() {
+            this.setScale(0, 0, 0, {
+                duration: duration / 2
+            });
+        }.bind(this));
     }
 }
