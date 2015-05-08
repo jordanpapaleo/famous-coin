@@ -176,67 +176,41 @@ export class App extends View {
     renderRings() {
         this.rings = [];
 
-        let bubbleCount = 0;
+        let ringCount = 0;
         let windowWidth =  window.innerWidth;
 
         if(windowWidth < 320) {
-            bubbleCount = 5;
+            ringCount = 5;
         } else if(windowWidth < 428) {
-            bubbleCount = 10;
+            ringCount = 10;
         } else if(windowWidth < 768) {
-            bubbleCount = 15;
+            ringCount = 15;
         } else if(windowWidth < 992) {
-            bubbleCount = 20;
+            ringCount = 20;
         } else {
-            bubbleCount = 30;
+            ringCount = 30;
         }
+
+        //ringCount = 50;
 
         let collision = [];
 
-        for(let i = 0; i < bubbleCount; i++) {
+        for(let i = 0; i < ringCount; i++) {
             let ring = new Ring(this.node.addChild());
             collision.push(ring.box);
             this.rings.push(ring);
         }
 
-        /*let simulation = PhysicsEngine.getSimulation();
-        simulation.add(collision);*/
-
         setTimeout(function() {
-            this.loadRings()
-        }.bind(this), 500)
+            this.loadRings();
+        }.bind(this), 500);
     }
 
     loadRings() {
         this.rings.forEach(function(ring) {
             ring.setOpacity(1);
             ring.setScale(1, 1, 1, {
-                duration: 750,
-            });
-            ring.testPhysics();
-        });
-    }
-
-    loadRings2() {
-        this.rings.forEach(function(ring, i) {
-            let currentTime = Math.random() * (1000 - 500) + 500;
-
-            ring.setOpacity(1);
-            ring.setScale(.5, .5, .5, {
-                duration: currentTime,
-                curve: Curves.linear
-            });
-
-            ring.setPositionX(ring.model.positionX, {
-                duration: currentTime,
-                curve: Curves.easeOut
-            });
-
-            ring.setPositionY(ring.model.positionY, {
-                duration: currentTime,
-                curve: Curves.easeOut
-            }, function() {
-                ring.sink();
+                duration: 750
             });
         });
     }

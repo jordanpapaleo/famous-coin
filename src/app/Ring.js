@@ -1,20 +1,15 @@
 import View     from 'famous-creative/display/View';
 import Physics  from './PhysicsService';
 
-const Curves           = FamousPlatform.transitions.Curves;
-const PhysicsEngine    = FamousPlatform.physics.PhysicsEngine;
 const Famous           = FamousPlatform.core.Famous;
 const GestureHandler   = FamousPlatform.components.GestureHandler;
 
 
 //Physics Components
 const Box              = FamousPlatform.physics.Box;
-const Collision        = FamousPlatform.physics.Collision;
 const Spring           = FamousPlatform.physics.Spring;
-const RotationalSpring = FamousPlatform.physics.RotationalSpring;
 const Gravity1D        = FamousPlatform.physics.Gravity1D;
 const Gravity3D        = FamousPlatform.physics.Gravity3D;
-const Quaternion       = FamousPlatform.math.Quaternion;
 const Vec3             = FamousPlatform.math.Vec3;
 
 export class Ring extends View {
@@ -44,7 +39,7 @@ export class Ring extends View {
                 borderColor: this.model.ringColor,
                 borderRadius: '50%',
                 borderStyle: 'solid',
-                borderWidth: this.model.ringSize
+                'border-width': this.model.ringSize + 'px'
             }
         });
 
@@ -56,10 +51,16 @@ export class Ring extends View {
     }
 
     setEvents() {
+        console.log('setEvents');
+
         this.on('risingComplete', () => {
+            console.log('risingComplete');
+
             this.setDOMProperties({
-                borderColor: 'black'
+                borderColor: 'white'
             });
+
+            this.exit();
         });
 
         this.on('risingTide', function(message) {
@@ -107,7 +108,7 @@ export class Ring extends View {
         }]);
     }
 
-    testPhysics() {
+    spreadRings() {
         this.isGravityApplied = true;
 
         this.anchor.set(this.model.positionX, this.model.positionY);
@@ -151,13 +152,13 @@ export class Ring extends View {
             if(!this.gravityX || this.gravityX === -10) {
                 this.gravityX = 10;
             } else {
-                this.gravityX = -10
+                this.gravityX = -10;
             }
 
             if(!this.gravityZ || this.gravityZ === -10) {
                 this.gravityZ = 10;
             } else {
-                this.gravityZ = -10
+                this.gravityZ = -10;
             }
 
             if(!this.gravityY) {
@@ -200,12 +201,12 @@ export class Ring extends View {
         }
     }
 
-    _getRingColors() {
-        const colors = ['#329978', '#0089e0', '#3980a8','#da695b'];
-        return colors[Math.floor(Math.random() * colors.length)]
+    static _getRingColors() {
+        const colors = ['#329978', '#0089e0', '#3980a8', '#da695b'];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    _getRingSize() {
+    static _getRingSize() {
         const ringSizes = [1, 2, 3];
         return ringSizes[Math.floor(Math.random() * ringSizes.length)];
     }
@@ -219,36 +220,23 @@ export class Ring extends View {
 
         this.setScale(1.2, 1.2, 1.2, {
             duration: duration / 2
-        }, function() {
+        }, () => {
             this.setScale(0, 0, 0, {
                 duration: duration / 2
+            }, () => {
             });
-        }.bind(this));
+        });
     }
 
     exit() {
+        console.log('exit');
         let xPos = 0;
-        let yPos = window.innerHeight - 225;
-        this.setDOMProperties({
-            borderColor: 'black'
-        });
+        let yPos = window.innerHeight - 265;
 
-        this.setAbsoluteSize(70, 70, 0, {
-            duration: 500
-        });
-
-        this.setPositionX(xPos, {
-            duration: 500,
-            curves: Curves.easeIn
-        });
-
-        this.setPositionY(yPos, {
-            duration: 500,
-            curves: Curves.easeOut
-        }, function() {
-            this.setOpacity(0);
-            this.emit('spinCoin');
-        }.bind(this));
+        this.anchor.set(xPos, yPos);
+        //this.hide();
+        //TODO: Timeout for calling emitting SpinCoin until
+        this.emit('spinCoin');
     }
 
 /*    morphColor() {
@@ -286,6 +274,4 @@ export class Ring extends View {
             }
         }.bind(this));
     }*/
-
-
 }
