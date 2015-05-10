@@ -1,8 +1,9 @@
-import View     from 'famous-creative/display/View';
-import Timeline from 'famous-creative/animation/Timeline';
-import {Hand}   from './Hand';
-import {Card}   from './Card';
-import {Ring}   from './Ring';
+import View             from 'famous-creative/display/View';
+import Timeline         from 'famous-creative/animation/Timeline';
+import {Hand}           from './Hand';
+import {Card}           from './Card';
+import {Ring}           from './Ring';
+import {SpinningRing}   from './SpinningRing';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
@@ -36,7 +37,7 @@ export class App extends View {
         this.renderCards();
         this.renderHand();
         this.renderTagLine();
-        this.renderSpinningCoin();
+        this.renderSpinningRings();
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
@@ -106,45 +107,21 @@ export class App extends View {
         this.tagLine = new TagLine(this.node.addChild());
     }
 
-    renderSpinningCoin() {
+    renderSpinningRings() {
         let svgPaths = [
             'assets/svg/outerCircle.svg',
             'assets/svg/innerCircle.svg'
         ];
 
-        this.spinningCoins = [];
+        this.spinningRings = [];
 
         for(var i = 0; i < svgPaths.length; i++) {
-            let coin = new View(this.node.addChild());
-            let sizeX, sizeY, posY;
-
-            coin.createDOMElement({
-                tagName: 'img',
-                attributes: {
-                    'src': svgPaths[i]
-                }
+            let ring = new SpinningRing(this.node.addChild(), {
+                i,
+                svgPath: svgPaths[i]
             });
 
-            if(i === 0) {
-                //Outer coin
-                sizeX = 90;
-                sizeY = 90;
-                posY  = window.innerHeight * 1.1;
-            } else if(i === 1) {
-                //Inner coin
-                sizeX = 78;
-                sizeY = 78;
-                posY  = window.innerHeight * 1.1;
-            }
-
-            coin.setSizeMode(1, 1);
-            coin.setAbsoluteSize(sizeX, sizeY);
-            coin.setPositionY(posY);
-
-            coin.setMountPoint(.5, 0);
-            coin.setAlign(.5, 0);
-            coin.setOrigin(.5, .5);
-            this.spinningCoins.push(coin);
+            this.spinningRings.push(ring);
         }
     }
 
@@ -203,11 +180,13 @@ export class App extends View {
 
         setTimeout(function() {
             this.loadRings();
+
         }.bind(this), 500);
     }
 
     loadRings() {
         this.rings.forEach(function(ring) {
+            ring.spreadRing();
             ring.setOpacity(1);
             ring.setScale(1, 1, 1, {
                 duration: 750
@@ -450,7 +429,11 @@ export class App extends View {
 
                 if(time >= this.time.step5 && !this.hasRisen) {
                     this.hasRisen = true;
-                    this.emit('risingComplete');
+                    //this.emit('risingComplete');  //TODO Eventing is not working right here
+
+                    this.rings.forEach(function(ring) {
+                        ring.exit();
+                    });
                 }
             },
             path: [
@@ -507,8 +490,8 @@ export class App extends View {
         });
 
         /*--------------------- SPINNING COINS ---------------------*/
-        for(let i = 0, j = this.spinningCoins.length; i < j; i++) {
-            let coin = this.spinningCoins[i];
+        for(let i = 0, j = this.spinningRings.length; i < j; i++) {
+            let coin = this.spinningRings[i];
 
             let startingYPos = coin.getPositionY();
             let endingYPos = window.innerHeight - 265;

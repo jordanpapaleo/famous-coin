@@ -44,23 +44,15 @@ export class Ring extends View {
         });
 
         this._setRingPosition();
-
-        this.setEvents();
-
         this._initPhysics();
+        this.setEvents();
     }
 
     setEvents() {
-        console.log('setEvents');
-
         this.on('risingComplete', () => {
-            console.log('risingComplete');
-
-            this.setDOMProperties({
-                borderColor: 'white'
-            });
-
-            this.exit();
+            //TODO Eventing is not working right here
+            console.warn('Eventing bug');
+            //this.exit();
         });
 
         this.on('risingTide', function(message) {
@@ -76,7 +68,6 @@ export class Ring extends View {
             let size = this.getSize();
 
             let bottomEdge = yPos + size[1];
-
 
             if(bottomEdge > message) {
                 this.hasChanged = true;
@@ -96,7 +87,6 @@ export class Ring extends View {
         }.bind(this));
 
         this.on('mousedown', () => {
-            console.log('here');
             this.pop();
         });
 
@@ -108,9 +98,8 @@ export class Ring extends View {
         }]);
     }
 
-    spreadRings() {
+    spreadRing() {
         this.isGravityApplied = true;
-
         this.anchor.set(this.model.positionX, this.model.positionY);
     }
 
@@ -201,12 +190,12 @@ export class Ring extends View {
         }
     }
 
-    static _getRingColors() {
+    _getRingColors() {
         const colors = ['#329978', '#0089e0', '#3980a8', '#da695b'];
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    static _getRingSize() {
+    _getRingSize() {
         const ringSizes = [1, 2, 3];
         return ringSizes[Math.floor(Math.random() * ringSizes.length)];
     }
@@ -224,54 +213,26 @@ export class Ring extends View {
             this.setScale(0, 0, 0, {
                 duration: duration / 2
             }, () => {
+                this.node.hide();
             });
         });
     }
 
     exit() {
-        console.log('exit');
         let xPos = 0;
         let yPos = window.innerHeight - 265;
+        let delay = (Math.random() * (1000 - 500)) + 500;
+        let springDuration = 950;
 
-        this.anchor.set(xPos, yPos);
-        //this.hide();
-        //TODO: Timeout for calling emitting SpinCoin until
-        this.emit('spinCoin');
+        //Random Delay so rings do not move at the same time
+        setTimeout(() => {
+            this.anchor.set(xPos, yPos);
+            this.setAbsoluteSize(70, 70, 70, {
+                duration: springDuration
+            }, () => {
+                this.node.hide();
+                this.emit('spinCoin');
+            });
+        }, delay);
     }
-
-/*    morphColor() {
-
-    }
-
-    sink() {
-        let y = this.getPositionY();
-        this.x = this.getPositionX();
-        this.sinkDuration = 2000;
-        this.swayFrequency = 10;
-        this.swayRunningDuration = 0;
-
-        this._sway(this.x);
-        this.setPositionY(y + window.innerHeight / 4, {
-            duration: this.sinkDuration
-        }, function() {
-            this.exit();
-        }.bind(this));
-    }
-
-    _sway(x) {
-        let duration = this.sinkDuration / this.swayFrequency;
-        this.swayRunningDuration += duration;
-
-        this.setPositionX(x, {
-            duration
-        }, function() {
-            if(this.swayRunningDuration < this.sinkDuration) {
-                if(x < this.x) {
-                    this._sway(x + 5);
-                } else {
-                    this._sway(x - 5);
-                }
-            }
-        }.bind(this));
-    }*/
 }
