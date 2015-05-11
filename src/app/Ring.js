@@ -4,7 +4,6 @@ import Physics  from './PhysicsService';
 const Famous           = FamousPlatform.core.Famous;
 const GestureHandler   = FamousPlatform.components.GestureHandler;
 
-
 //Physics Components
 const Box              = FamousPlatform.physics.Box;
 const Spring           = FamousPlatform.physics.Spring;
@@ -27,8 +26,9 @@ export class Ring extends View {
         this.setMountPoint(.5, 0);
         this.setOrigin(.5, .5);
         this.setPositionY(175);
-        this.setOpacity(0);
-        this.setScale(.25, .25);
+        this.setPositionZ(-500);
+        //this.setOpacity(0);
+        //this.setScale(.25, .25);
         this.setSizeModeAbsolute();
         this.setAbsoluteSize(this.model.size, this.model.size);
 
@@ -39,13 +39,39 @@ export class Ring extends View {
                 borderColor: this.model.ringColor,
                 borderRadius: '50%',
                 borderStyle: 'solid',
-                'border-width': this.model.ringSize + 'px'
-            }
+                'border-width': this.model.ringSize + 'px',
+                'z-index': -500
+            },
+            classes: ['ring']
         });
 
         this._setRingPosition();
         this._initPhysics();
         this.setEvents();
+    }
+
+    _setRingPosition() {
+        const xMax = window.innerWidth / 4;
+        const yMax = window.innerHeight / 4;
+        this.model.positionX = Math.random() * (xMax * 2) - xMax;
+        this.model.positionY = Math.random() * (yMax * 2) - yMax;
+
+        /*this.model.positionX = Math.random() * 50;
+         this.model.positionY = Math.random() * 50;*/
+
+        if(this.model.positionY < 0) {
+            this.model.positionY += 175;
+        }
+    }
+
+    _getRingColors() {
+        const colors = ['#329978', '#0089e0', '#3980a8', '#da695b'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    _getRingSize() {
+        const ringSizes = [1, 2, 3];
+        return ringSizes[Math.floor(Math.random() * ringSizes.length)];
     }
 
     setEvents() {
@@ -98,19 +124,14 @@ export class Ring extends View {
         }]);
     }
 
-    spreadRing() {
-        this.isGravityApplied = true;
-        this.anchor.set(this.model.positionX, this.model.positionY);
-    }
-
     _initPhysics() {
-        this.simulation = Physics.getSimulation();
-        this.isGravityApplied = false;
+        this.world = Physics.getSimulation();
+        this.isPhysicsActive = false;
 
         var updater = {
             onUpdate: (t) => {
-                this.simulation.update(t);
-                this._update();
+                this.world.update(t);
+                this.update();
 
                 Famous.requestUpdateOnNextTick(updater);
             }
@@ -120,84 +141,45 @@ export class Ring extends View {
 
         //Mass will only have an effect if there is a force
         this.box = new Box({
-            mass: 100,
-            size: [this.model.size, this.model.size, 0]
+            mass: (1 / this.model.ringSize) * 50,
+            size: [this.model.size, this.model.size, 0],
+            position : new Vec3(this.model.positionX, this.model.positionY, 0)
         });
 
-        //
-        this.anchor = new Vec3(0, 175, 0);
-
-        this.spring = new Spring(null, this.box, {
-            period: 1,
-            dampingRatio: .9,
-            anchor: this.anchor
-        });
-
-        this.simulation.add([this.box, this.spring, this.collision]);
+        this.spring = new Spring({});
     }
 
-    _update() {
-        if(this.isGravityApplied) {
-            if(!this.gravityX || this.gravityX === -10) {
-                this.gravityX = 10;
+    update() {
+        if(!this.hasOwnProperty('hasVelocity')) {
+            this.hasVelocity = true;
+            this.box.setVelocity(0, this.model.ringSize * 10, 0);
+        }
+
+        if(true || this.isPhysicsActive) {
+            let physicsTransform = this.world.getTransform(this.box);
+
+            /*
+            let blackholeRadius = 30;
+
+            var dx = physicsTransform.position[0] - 0;
+            var dy = physicsTransform.position[1] - 500;
+
+            if(Math.sqrt(dx * dx + dy * dy) < blackholeRadius) {
+                this.isPhysicsActive = false;
+                this.setScale(0, 0, 0, {duration : 200});
+            }
+            */
+
+            if(physicsTransform.position[1] > window.innerHeight) {
+               this.recycle();
             } else {
-                this.gravityX = -10;
+                this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[2]);
             }
-
-            if(!this.gravityZ || this.gravityZ === -10) {
-                this.gravityZ = 10;
-            } else {
-                this.gravityZ = -10;
-            }
-
-            if(!this.gravityY) {
-                let yGravity = 0;
-
-                switch(this.model.ringSize) {
-                    case 1:
-                        yGravity = this.model.ringSize;
-                        break;
-                    case 2:
-                        yGravity = this.model.ringSize * 3;
-                        break;
-                    case 3:
-                        yGravity = this.model.ringSize * 8;
-                        break;
-                }
-
-                this.gravityY = Math.random() * yGravity + 1;
-            }
-
-            let physicsTransform = this.simulation.getTransform(this.box);
-            this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[3]);
-
-            this.gravity = new Gravity1D([this.box], {
-                acceleration: new Vec3(this.gravityX, this.gravityY, this.gravityZ)
-            });
-
-            this.simulation.add(this.gravity);
         }
     }
 
-    _setRingPosition() {
-        const xMax = window.innerWidth / 2;
-        const yMax = window.innerHeight / 2;
-        this.model.positionX = Math.random() * (xMax * 2) - xMax;
-        this.model.positionY  = Math.random() * (yMax * 2) - yMax;
-
-        if(this.model.positionY < 0) {
-            this.model.positionY += 175;
-        }
-    }
-
-    _getRingColors() {
-        const colors = ['#329978', '#0089e0', '#3980a8', '#da695b'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    _getRingSize() {
-        const ringSizes = [1, 2, 3];
-        return ringSizes[Math.floor(Math.random() * ringSizes.length)];
+    startRingAnimation() {
+        this.isPhysicsActive = true;
     }
 
     pop() {
@@ -214,6 +196,8 @@ export class Ring extends View {
                 duration: duration / 2
             }, () => {
                 this.node.hide();
+                this.world.remove(this.box);
+                this.isPhysicsActive = false;
             });
         });
     }
@@ -226,13 +210,27 @@ export class Ring extends View {
 
         //Random Delay so rings do not move at the same time
         setTimeout(() => {
-            this.anchor.set(xPos, yPos);
-            this.setAbsoluteSize(70, 70, 70, {
+            //this.anchor.set(xPos, yPos);
+            /*this.setAbsoluteSize(70, 70, 70, {
                 duration: springDuration
-            }, () => {
-                this.node.hide();
+            }, () => {*/
+                //this.node.hide();
                 this.emit('spinCoin');
-            });
+            //});
         }, delay);
     }
+
+    recycle() {
+        let windowHalf = window.innerWidth / 2;
+        let xPos = Math.random() * (windowHalf * 2) - windowHalf;
+        let yPos = Math.random() * -700 - 200;
+
+        console.log('xPos', xPos);
+
+        this.box.setPosition(xPos, yPos, 0);
+    }
 }
+
+/*
+* Pull rotational gravity and have the bubbles slowly fall getting sucked towards the logo
+* */

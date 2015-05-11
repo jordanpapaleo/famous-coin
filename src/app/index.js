@@ -5,10 +5,16 @@ import {Card}           from './Card';
 import {Ring}           from './Ring';
 import {SpinningRing}   from './SpinningRing';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
+import Physics  from './PhysicsService';
 
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
 const Color          = FamousPlatform.utilities.Color;
+
+const Gravity1D      = FamousPlatform.physics.Gravity1D;
+const Gravity3D      = FamousPlatform.physics.Gravity3D;
+const Vec3           = FamousPlatform.math.Vec3;
+const Box            = FamousPlatform.physics.Box;
 
 export class App extends View {
     constructor(node, options) {
@@ -26,9 +32,84 @@ export class App extends View {
             }
         });
 
-        this.render();
-        this.setEvents();
-        this.registerTimelinePaths();
+        //this.render();
+        this.renderSpinningRings();
+        //this.renderRings();
+
+        //this.setEvents();
+        //this.registerTimelinePaths();
+
+        //this.initWorld();
+        //this.phyAddRepulsion();
+        //this.phyAdd1dGravity();
+    }
+
+
+    initWorld() {
+        this.world = Physics.getSimulation();
+        window.world = this.world;
+        this.ringBodies = [];
+
+        for(let i = 0; i < this.rings.length; i++) {
+            window.box = this.rings[i].box; //TODO PULL after done debugging
+            this.ringBodies.push(this.rings[i].box);
+        }
+
+        this.world.add(this.ringBodies);
+    }
+
+    phyAddRepulsion() {
+        this.initialRepusionPoint = new Box({
+            mass: 1000,
+            size: [10, 10, 10],
+            position : new Vec3(0, 50, 0)
+        });
+
+        this.initialRepusion = new Gravity3D(this.initialRepusionPoint, this.ringBodies, {
+            strength : -1e3
+        });
+
+        //this.world.add([this.initialRepusionPoint, this.initialRepusion]);
+
+        //Effect a ring has on the other rings
+        //TODO Move this into the Ring class as it is a property of the ring... i think
+        let ringRepulsions = [];
+        for(let i = 0; i < this.ringBodies.length; i++) {
+            ringRepulsions.push(new Gravity3D(this.ringBodies[i], this.ringBodies, {
+                strength : -1e2 //Negative Repulsion pushes away
+            }));
+        }
+        this.world.add(ringRepulsions);
+    }
+
+    phyAdd1dGravity() {
+        //Downward gravity
+        this.gravity1d = new Gravity1D(this.ringBodies, {
+            acceleration: new Vec3(0, 10, 0)
+        });
+
+        this.world.add([this.gravity1d]);
+    }
+
+    phyAdd3dGravity() {
+        let coinLogoEndPoint = window.innerHeight - 265;
+
+        this.gravity3d = new Gravity3D(undefined, this.ringBodies, {
+            strength : 1e8,
+            anchor : new Vec3(0, coinLogoEndPoint, 0)
+        });
+
+        this.world.add([this.gravity3d]);
+    }
+
+    loadRings() {
+        this.rings.forEach(function(ring) {
+            ring.startRingAnimation();
+            ring.setOpacity(1);
+            ring.setScale(1, 1, 1, {
+                duration: 750
+            });
+        });
     }
 
     render() {
@@ -37,11 +118,9 @@ export class App extends View {
         this.renderCards();
         this.renderHand();
         this.renderTagLine();
-        this.renderSpinningRings();
         this.renderCoin();
         this.renderGetYours();
         this.renderPreOrder();
-        this.renderRings();
     }
 
     renderBlueScreen() {
@@ -49,7 +128,8 @@ export class App extends View {
 
         this.blueScreen.createDOMElement({
             properties: {
-                'background-color': 'rgb(22, 139, 221)'
+                'background-color': 'rgb(22, 139, 221)',
+                'z-index': -1000
             },
             classes: ['blue-screen']
         });
@@ -168,30 +248,10 @@ export class App extends View {
             ringCount = 30;
         }
 
-        //ringCount = 50;
-
-        let collision = [];
-
         for(let i = 0; i < ringCount; i++) {
             let ring = new Ring(this.node.addChild());
-            collision.push(ring.box);
             this.rings.push(ring);
         }
-
-        setTimeout(function() {
-            this.loadRings();
-
-        }.bind(this), 500);
-    }
-
-    loadRings() {
-        this.rings.forEach(function(ring) {
-            ring.spreadRing();
-            ring.setOpacity(1);
-            ring.setScale(1, 1, 1, {
-                duration: 750
-            });
-        });
     }
 
     translateShimmer() {
@@ -387,16 +447,19 @@ export class App extends View {
         this.time.step5 = this.time.step4 + 1000; // Coin card scale and flip apex
         this.time.step6 = this.time.step5 + 250;  // Coin card scale and flip almost done
         this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
-        this.time.step8 = this.time.step7 + 1000;  // Stage two done: Tag line and coin card are moving up and out
-        this.time.end   = this.time.step8 + 1000;  // Finis
+        this.time.step8 = this.time.step7 + 1000; // Stage two done: Tag line and coin card are moving up and out
+        this.time.end   = this.time.step8 + 1000; // Finis
 
         /*--------------------- RINGS  ---------------------*/
-        let initializedRings = false;
         this.timeline.registerPath({
             handler: (time) => {
-                if(time >= this.time.step3 && !initializedRings) {
+                if(!this.hasOwnProperty('initializedRings')) {
+                    this.initializedRings = false;
+                }
+
+                if(!this.initializedRing && time >= this.time.step3) {
                     this.loadRings();
-                    initializedRings = true;
+                    this.initializedRing = true;
                 }
             },
             path: [
@@ -713,6 +776,7 @@ export class App extends View {
                     [this.time.step1, [.5, .5, .5]],
                     [this.time.step2, [.3, .3, .3]],
                     [this.time.step3, [.5, .5, .5]],
+                    [this.time.step3 + 50, [.5, .5, .5]],
                     [this.time.step4, [.62, .62, .62]],
                     [this.time.step5, [.75, .75, .75]]
                 ];
@@ -721,6 +785,7 @@ export class App extends View {
                     [this.time.step1, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step2, [(-540 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step3, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
+                    [this.time.step3 + 50, [(-360 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step4, [(-270 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step5, [(0 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
                     [this.time.step6, [(15 * Math.PI / 180), 0, (90 * Math.PI / 180)]],
@@ -736,6 +801,7 @@ export class App extends View {
                     [(this.time.step1 / 2), [0, 250, 0]],
                     [this.time.step1, [0, 75, 0], Curves.outBack],
                     [this.time.step3, [0, 75, 0]],
+                    [this.time.step3 + 50, [0, 75, 0]],
                     [this.time.step4, [0, 300, 0]],
                     [this.time.step5, [0, 200, 0]],
                     [this.time.step7, [0, 200, 0]],
