@@ -10,20 +10,40 @@ Physics.getSimulation = function() {
     return this._simulation;
 };
 
-/*
-Physics.updateSimulation = function(t) {
-    this._simulation.update(t);
+Physics.magnifyForce = function() {
+    let width =  window.innerWidth;
+    let height = window.innerHeight;
+    let ratio = 1;
+
+    if(width < 320) {
+        ratio = 1.6;
+    } else if(width < 428) {
+        ratio = 1.5;
+    } else if(width < 768) {
+        ratio = 1.15;
+    } else {
+        ratio = 1;
+    }
+
+    return ratio * v;
 };
 
+Physics.dampenForce = function(v) {
+    let width =  window.innerWidth;
+    let height = window.innerHeight;
+    let ratio = 1;
 
-Physics.addToSimulation = function() {
-    this._simulation.add(arguments);
-};
+    if(width < 320) {
+        ratio = .4;
+    } else if(width < 428) {
+        ratio = .5;
+    } else if(width < 768) {
+        ratio = .85;
+    } else {
+        ratio = 1;
+    }
 
-Physics.addCollision = function() {
-    let collision = new Collision(arguments);
-    this._simulation.add(collision);
+    return ratio * v;
 };
-*/
 
 export default Physics;

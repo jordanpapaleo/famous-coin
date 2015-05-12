@@ -15,11 +15,23 @@ const Gravity1D      = FamousPlatform.physics.Gravity1D;
 const Gravity3D      = FamousPlatform.physics.Gravity3D;
 const Vec3           = FamousPlatform.math.Vec3;
 const Box            = FamousPlatform.physics.Box;
+const Drag           = FamousPlatform.physics.Drag;
 
 export class App extends View {
     constructor(node, options) {
         super(node, options);
         this.timeline = new Timeline({ timescale: 1 });
+        this.time = {};
+        this.time.start = 0;
+        this.time.step1 = this.time.start + 1500; // Card scale apex
+        this.time.step2 = this.time.step1 + 500;  // Card scale basin
+        this.time.step3 = this.time.step2 + 500;  // Stage one done: Coin card has scaled back to a resting point
+        this.time.step4 = this.time.step3 + 1000; // Coin card scale and flip starting
+        this.time.step5 = this.time.step4 + 1000; // Coin card scale and flip apex
+        this.time.step6 = this.time.step5 + 250;  // Coin card scale and flip almost done
+        this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
+        this.time.step8 = this.time.step7 + 1000; // Stage two done: Tag line and coin card are moving up and out
+        this.time.end   = this.time.step8 + 1000; // Finis
 
         this.setSizeMode(0, 0);
         this.setAbsoluteSize(1, 1);
@@ -32,60 +44,50 @@ export class App extends View {
             }
         });
 
-        //this.render();
+        this.render();
         this.renderSpinningRings();
-        //this.renderRings();
+        this.renderRings();
 
-        //this.setEvents();
-        //this.registerTimelinePaths();
+        this.setEvents();
+        this.registerTimelinePaths();
 
-        //this.initWorld();
-        //this.phyAddRepulsion();
-        //this.phyAdd1dGravity();
+        this.initWorld();
     }
 
 
     initWorld() {
         this.world = Physics.getSimulation();
-        window.world = this.world;
         this.ringBodies = [];
 
         for(let i = 0; i < this.rings.length; i++) {
-            window.box = this.rings[i].box; //TODO PULL after done debugging
             this.ringBodies.push(this.rings[i].box);
         }
 
-        this.world.add(this.ringBodies);
+        this.drag = new Drag(this.ringBodies, {
+            max: 7500,
+            strength: 7500,
+            type: Drag.Linear
+        });
+
+        this.world.add(this.ringBodies, this.drag);
     }
 
     phyAddRepulsion() {
-        this.initialRepusionPoint = new Box({
-            mass: 1000,
-            size: [10, 10, 10],
-            position : new Vec3(0, 50, 0)
-        });
-
-        this.initialRepusion = new Gravity3D(this.initialRepusionPoint, this.ringBodies, {
-            strength : -1e3
-        });
-
-        //this.world.add([this.initialRepusionPoint, this.initialRepusion]);
-
-        //Effect a ring has on the other rings
-        //TODO Move this into the Ring class as it is a property of the ring... i think
+        console.log('repuslion');
         let ringRepulsions = [];
         for(let i = 0; i < this.ringBodies.length; i++) {
             ringRepulsions.push(new Gravity3D(this.ringBodies[i], this.ringBodies, {
-                strength : -1e2 //Negative Repulsion pushes away
+                strength : -1e3 //Negative Repulsion pushes away
             }));
         }
+
         this.world.add(ringRepulsions);
     }
 
     phyAdd1dGravity() {
         //Downward gravity
         this.gravity1d = new Gravity1D(this.ringBodies, {
-            acceleration: new Vec3(0, 10, 0)
+            acceleration: new Vec3(0, 75, 0)
         });
 
         this.world.add([this.gravity1d]);
@@ -94,8 +96,8 @@ export class App extends View {
     phyAdd3dGravity() {
         let coinLogoEndPoint = window.innerHeight - 265;
 
-        this.gravity3d = new Gravity3D(undefined, this.ringBodies, {
-            strength : 1e8,
+        this.gravity3d = new Gravity3D(this.spinningRings[0].sphere, this.ringBodies, {
+            strength : 1e7,
             anchor : new Vec3(0, coinLogoEndPoint, 0)
         });
 
@@ -103,13 +105,38 @@ export class App extends View {
     }
 
     loadRings() {
-        this.rings.forEach(function(ring) {
-            ring.startRingAnimation();
+        const _this = this;
+        let dampenedVelocity = Physics.dampenForce(300);
+
+        this.rings.forEach((ring) => {
             ring.setOpacity(1);
-            ring.setScale(1, 1, 1, {
+
+            ring.box.setVelocity(Math.random() * (dampenedVelocity * 2) - dampenedVelocity, Math.random() * (dampenedVelocity * 2) - dampenedVelocity, 0);
+            ring.activatePhysics();
+
+            ring.setScale(1.1, 1.1, 1.1, {
                 duration: 750
+            }, () => {
+                ring.setScale(1, 1, 1, {
+                    duration: 50
+                });
             });
+
+            setTimeout(function() {
+                ring.setDOMProperties({
+                    'border-color': '#000000'
+                });
+            }, this.time.step7);
         });
+
+        setTimeout(function() {
+            _this.phyAdd1dGravity();
+            _this.phyAddRepulsion();
+        }, 850);
+
+        setTimeout(function() {
+            _this.phyAdd3dGravity();
+        }, this.time.step7);
     }
 
     render() {
@@ -245,8 +272,10 @@ export class App extends View {
         } else if(windowWidth < 992) {
             ringCount = 20;
         } else {
-            ringCount = 30;
+            ringCount = 25;
         }
+
+        //ringCount = 10;
 
         for(let i = 0; i < ringCount; i++) {
             let ring = new Ring(this.node.addChild());
@@ -438,18 +467,6 @@ export class App extends View {
     registerTimelinePaths() {
         this.currentTime = 0; //Used in timeline scrubbing
 
-        this.time = {};
-        this.time.start = 0;
-        this.time.step1 = this.time.start + 1500; // Card scale apex
-        this.time.step2 = this.time.step1 + 500;  // Card scale basin
-        this.time.step3 = this.time.step2 + 500;  // Stage one done: Coin card has scaled back to a resting point
-        this.time.step4 = this.time.step3 + 1000; // Coin card scale and flip starting
-        this.time.step5 = this.time.step4 + 1000; // Coin card scale and flip apex
-        this.time.step6 = this.time.step5 + 250;  // Coin card scale and flip almost done
-        this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
-        this.time.step8 = this.time.step7 + 1000; // Stage two done: Tag line and coin card are moving up and out
-        this.time.end   = this.time.step8 + 1000; // Finis
-
         /*--------------------- RINGS  ---------------------*/
         this.timeline.registerPath({
             handler: (time) => {
@@ -457,7 +474,7 @@ export class App extends View {
                     this.initializedRings = false;
                 }
 
-                if(!this.initializedRing && time >= this.time.step3) {
+                if(!this.initializedRing && time >= this.time.step3 - 50) {
                     this.loadRings();
                     this.initializedRing = true;
                 }
@@ -488,15 +505,6 @@ export class App extends View {
 
                 if(time >= this.time.step3 && time <= this.time.step5) {
                     this.emit('risingTide', this.blueScreen.getPositionY());
-                }
-
-                if(time >= this.time.step5 && !this.hasRisen) {
-                    this.hasRisen = true;
-                    //this.emit('risingComplete');  //TODO Eventing is not working right here
-
-                    this.rings.forEach(function(ring) {
-                        ring.exit();
-                    });
                 }
             },
             path: [
@@ -552,7 +560,7 @@ export class App extends View {
             ]
         });
 
-        /*--------------------- SPINNING COINS ---------------------*/
+        /*--------------------- SPINNING RINGS ---------------------*/
         for(let i = 0, j = this.spinningRings.length; i < j; i++) {
             let coin = this.spinningRings[i];
 
@@ -575,18 +583,13 @@ export class App extends View {
 
             this.timeline.registerPath({
                 handler: (time) => {
-                    if(time >= this.time.step7) {
-                        if(i === 0) { // Outer ring
-                            coin.setRotation(540 * Math.PI / 180, 900 * Math.PI / 180, 0, {
-                                curve: Curves.easeOut,
-                                duration: 3000
-                            });
-                        } else if(i === 1) { // Inner ring
-                            coin.setRotation(-1080 * Math.PI / 180, -1440 * Math.PI / 180, 0, {
-                                curve: Curves.easeOut,
-                                duration: 3000
-                            });
-                        }
+                    if(!this.hasOwnProperty('hasLoadedRings')) {
+                        this.hasLoadedRings = false;
+                    }
+
+                    if(!this.hasLoadedRings && time >= this.time.step7) {
+                        this.emit('spinRing', {});
+                        this.hasLoadedRings = true;
                     }
                 },
                 path: [

@@ -7,8 +7,6 @@ const GestureHandler   = FamousPlatform.components.GestureHandler;
 //Physics Components
 const Box              = FamousPlatform.physics.Box;
 const Spring           = FamousPlatform.physics.Spring;
-const Gravity1D        = FamousPlatform.physics.Gravity1D;
-const Gravity3D        = FamousPlatform.physics.Gravity3D;
 const Vec3             = FamousPlatform.math.Vec3;
 
 export class Ring extends View {
@@ -20,15 +18,15 @@ export class Ring extends View {
             ringColor: this._getRingColors()
         };
 
-        this.model.size = 50 * this.model.ringSize;
+        this.model.size = this.model.ringSize * 35;
 
         this.setAlign(.5, 0);
         this.setMountPoint(.5, 0);
         this.setOrigin(.5, .5);
-        this.setPositionY(175);
+        this.setPositionY(200);
         this.setPositionZ(-500);
-        //this.setOpacity(0);
-        //this.setScale(.25, .25);
+        this.setOpacity(0);
+        this.setScale(.25, .25);
         this.setSizeModeAbsolute();
         this.setAbsoluteSize(this.model.size, this.model.size);
 
@@ -36,10 +34,8 @@ export class Ring extends View {
             properties: {
                 width: '100%',
                 height: '100%',
-                borderColor: this.model.ringColor,
+                border: this.model.ringSize + 'px solid ' + this.model.ringColor,
                 borderRadius: '50%',
-                borderStyle: 'solid',
-                'border-width': this.model.ringSize + 'px',
                 'z-index': -500
             },
             classes: ['ring']
@@ -55,9 +51,6 @@ export class Ring extends View {
         const yMax = window.innerHeight / 4;
         this.model.positionX = Math.random() * (xMax * 2) - xMax;
         this.model.positionY = Math.random() * (yMax * 2) - yMax;
-
-        /*this.model.positionX = Math.random() * 50;
-         this.model.positionY = Math.random() * 50;*/
 
         if(this.model.positionY < 0) {
             this.model.positionY += 175;
@@ -75,12 +68,6 @@ export class Ring extends View {
     }
 
     setEvents() {
-        this.on('risingComplete', () => {
-            //TODO Eventing is not working right here
-            console.warn('Eventing bug');
-            //this.exit();
-        });
-
         this.on('risingTide', function(message) {
             if(!this.hasOwnProperty('hasChanged')) {
                 this.hasChanged = false;
@@ -141,36 +128,34 @@ export class Ring extends View {
 
         //Mass will only have an effect if there is a force
         this.box = new Box({
-            mass: (1 / this.model.ringSize) * 50,
+            mass: 100,
             size: [this.model.size, this.model.size, 0],
-            position : new Vec3(this.model.positionX, this.model.positionY, 0)
+            position : new Vec3(0, this.model.positionY, 0)
         });
 
         this.spring = new Spring({});
     }
 
     update() {
-        if(!this.hasOwnProperty('hasVelocity')) {
-            this.hasVelocity = true;
-            this.box.setVelocity(0, this.model.ringSize * 10, 0);
-        }
-
-        if(true || this.isPhysicsActive) {
+        if(this.isPhysicsActive) {
             let physicsTransform = this.world.getTransform(this.box);
-
-            /*
-            let blackholeRadius = 30;
-
             var dx = physicsTransform.position[0] - 0;
             var dy = physicsTransform.position[1] - 500;
 
-            if(Math.sqrt(dx * dx + dy * dy) < blackholeRadius) {
+            let distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
+            let blackholeRadius = 40;
+            if(distanceFromCenter < blackholeRadius) {
+                this.emit('spinRing', {});
+                //this.world.remove(this.box);
                 this.isPhysicsActive = false;
-                this.setScale(0, 0, 0, {duration : 200});
+                this.box.setVelocity(0, 0, 0);
+                //this.setOpacity(0, {duration : 100});
+                this.setScale(0.1, 0.1, 0.1, {duration : 100}, () => {
+                    this.recycle();
+                });
             }
-            */
 
-            if(physicsTransform.position[1] > window.innerHeight) {
+            if(physicsTransform.position[1] > window.innerHeight + 100) {
                this.recycle();
             } else {
                 this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[2]);
@@ -178,7 +163,7 @@ export class Ring extends View {
         }
     }
 
-    startRingAnimation() {
+    activatePhysics() {
         this.isPhysicsActive = true;
     }
 
@@ -186,7 +171,7 @@ export class Ring extends View {
         let duration = 100;
 
         this.setOpacity(0, {
-            duration: 75
+            duration: 50
         });
 
         this.setScale(1.2, 1.2, 1.2, {
@@ -195,42 +180,23 @@ export class Ring extends View {
             this.setScale(0, 0, 0, {
                 duration: duration / 2
             }, () => {
-                this.node.hide();
-                this.world.remove(this.box);
                 this.isPhysicsActive = false;
+                this.recycle();
             });
         });
-    }
-
-    exit() {
-        let xPos = 0;
-        let yPos = window.innerHeight - 265;
-        let delay = (Math.random() * (1000 - 500)) + 500;
-        let springDuration = 950;
-
-        //Random Delay so rings do not move at the same time
-        setTimeout(() => {
-            //this.anchor.set(xPos, yPos);
-            /*this.setAbsoluteSize(70, 70, 70, {
-                duration: springDuration
-            }, () => {*/
-                //this.node.hide();
-                this.emit('spinCoin');
-            //});
-        }, delay);
     }
 
     recycle() {
         let windowHalf = window.innerWidth / 2;
         let xPos = Math.random() * (windowHalf * 2) - windowHalf;
         let yPos = Math.random() * -700 - 200;
-
-        console.log('xPos', xPos);
-
         this.box.setPosition(xPos, yPos, 0);
+        this.scale.set(1, 1, 1, {duration : 10});
+        this.setOpacity(1);
+        this.box.setVelocity(0, 0, 0);
+        this.isPhysicsActive = true;
+        this.setDOMProperties({
+            'border-color': '#000000'
+        });
     }
 }
-
-/*
-* Pull rotational gravity and have the bubbles slowly fall getting sucked towards the logo
-* */

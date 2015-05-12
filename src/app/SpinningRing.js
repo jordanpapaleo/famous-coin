@@ -3,10 +3,12 @@ import Physics  from './PhysicsService';
 
 const Curves  = FamousPlatform.transitions.Curves;
 const Famous  = FamousPlatform.core.Famous;
+const Quaternion = FamousPlatform.math.Quaternion;
 
 //Physics Components
 const Sphere            = FamousPlatform.physics.Sphere;
 const Spring            = FamousPlatform.physics.Spring;
+const Box               = FamousPlatform.physics.Box;
 const RotationalSpring  = FamousPlatform.physics.RotationalSpring;
 const RotationalDrag    = FamousPlatform.physics.RotationalDrag;
 const Vec3              = FamousPlatform.math.Vec3;
@@ -16,6 +18,7 @@ export class SpinningRing extends View {
         super(node, options);
 
         this.model = {};
+        this.model.i = options.i;
 
         this.createDOMElement({
             tagName: 'img',
@@ -44,16 +47,17 @@ export class SpinningRing extends View {
         this.setMountPoint(.5, 0);
         this.setAlign(.5, 0);
         this.setOrigin(.5, .5);
-
+        this.isActiveRotation = false;
         this._initPhysics();
+        this.setEvents();
     }
 
     _initPhysics() {
-        this.simulation = Physics.getSimulation();
+        this.world = Physics.getSimulation();
 
         var updater = {
             onUpdate: (t) => {
-                this.simulation.update(t);
+                this.world.update(t);
                 this._update();
 
                 Famous.requestUpdateOnNextTick(updater);
@@ -67,23 +71,44 @@ export class SpinningRing extends View {
             size: [this.model.sizeX, this.model.sizeY, 0]
         });
 
-        this.anchor = new Vec3(0, this.model.posY, 0);
+        window.sphere = this.sphere;
 
-        this.rotationalSpring = new RotationalSpring(null, [this.sphere], {
-            period: 1,
-            dampingRatio: .9,
-            anchor: this.anchor
+        //A behavior that slows angular velocity by applying torque.
+        this.rotationalDrag = new RotationalDrag([this.sphere], {
+            max: 50,
+            strength: 50
         });
 
-        this.simulation.add([this.sphere, this.rotationalSpring]);
+        this.world.add([this.sphere, this.rotationalDrag]);
     }
 
     _update() {
-        let physicsTransform = this.simulation.getTransform(this.sphere);
-        //this.setRotation()
+        let velocity = this.sphere.getAngularVelocity();
+
+        if(velocity.x < 1 && velocity.y < 1 && velocity.z < 1) {
+            this.setRotation(0, 0, 0, {
+                duration: 2000
+            });
+            this.isRotationActive = false;
+        }
+
+        if(this.isRotationActive) {
+            let physicsTransform = this.world.getTransform(this.sphere);
+            let quaternion = new Quaternion(physicsTransform.rotation[3], physicsTransform.rotation[0], physicsTransform.rotation[1], physicsTransform.rotation[2]);
+            let rotation = {};
+            quaternion.toEuler(rotation);
+            this.setRotation(rotation.x, rotation.y, rotation.z);
+        }
     }
 
-    spinCoin() {
-        //Apply some physics force to a rotation
+    setEvents() {
+        this.on('spinRing', () => {
+            this.isRotationActive = true;
+            if(this.model.i === 0) {
+                this.sphere.setAngularVelocity(5, 15, 10);
+            } else if(this.model.i === 1) {
+                this.sphere.setAngularVelocity(25, 10, 15);
+            }
+        });
     }
 }
