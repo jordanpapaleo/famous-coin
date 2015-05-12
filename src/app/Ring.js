@@ -13,6 +13,8 @@ export class Ring extends View {
     constructor(node, options) {
         super(node);
 
+        this.isBlackholeActive = false;
+
         this.model = {
             ringSize: this._getRingSize(),
             ringColor: this._getRingColors()
@@ -128,9 +130,9 @@ export class Ring extends View {
 
         //Mass will only have an effect if there is a force
         this.box = new Box({
-            mass: 100,
+            mass: 10,
             size: [this.model.size, this.model.size, 0],
-            position : new Vec3(0, this.model.positionY, 0)
+            position : new Vec3(0, 175, 0)
         });
 
         this.spring = new Spring({});
@@ -142,14 +144,13 @@ export class Ring extends View {
             var dx = physicsTransform.position[0] - 0;
             var dy = physicsTransform.position[1] - 500;
 
-            let distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
-            let blackholeRadius = 40;
-            if(distanceFromCenter < blackholeRadius) {
+            let distanceFromCenter = Math.sqrt(dx * dx + dy * dy) - this.model.size / 2;
+            let blackholeRadius = 30;
+
+            if(this.isBlackholeActive && distanceFromCenter < blackholeRadius) {
                 this.emit('spinRing', {});
-                //this.world.remove(this.box);
                 this.isPhysicsActive = false;
                 this.box.setVelocity(0, 0, 0);
-                //this.setOpacity(0, {duration : 100});
                 this.setScale(0.1, 0.1, 0.1, {duration : 100}, () => {
                     this.recycle();
                 });
@@ -161,6 +162,10 @@ export class Ring extends View {
                 this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[2]);
             }
         }
+    }
+
+    activateBlackhole() {
+        this.isBlackholeActive = true;
     }
 
     activatePhysics() {

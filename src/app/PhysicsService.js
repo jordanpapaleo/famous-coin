@@ -34,9 +34,9 @@ Physics.dampenForce = function(v) {
     let ratio = 1;
 
     if(width < 320) {
-        ratio = .4;
+        ratio = .55;
     } else if(width < 428) {
-        ratio = .5;
+        ratio = .6;
     } else if(width < 768) {
         ratio = .85;
     } else {

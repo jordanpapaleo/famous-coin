@@ -87,18 +87,18 @@ export class App extends View {
     phyAdd1dGravity() {
         //Downward gravity
         this.gravity1d = new Gravity1D(this.ringBodies, {
-            acceleration: new Vec3(0, 75, 0)
+            acceleration: new Vec3(0, 800, 0)
         });
 
+
+        window.gravity1d = this.gravity1d;
         this.world.add([this.gravity1d]);
     }
 
     phyAdd3dGravity() {
-        let coinLogoEndPoint = window.innerHeight - 265;
-
-        this.gravity3d = new Gravity3D(this.spinningRings[0].sphere, this.ringBodies, {
+        this.gravity3d = new Gravity3D(null, this.ringBodies, {
             strength : 1e7,
-            anchor : new Vec3(0, coinLogoEndPoint, 0)
+            anchor: new Vec3(0, window.innerHeight - 265, 0)
         });
 
         this.world.add([this.gravity3d]);
@@ -106,7 +106,7 @@ export class App extends View {
 
     loadRings() {
         const _this = this;
-        let dampenedVelocity = Physics.dampenForce(300);
+        let dampenedVelocity = Physics.dampenForce(1000);
 
         this.rings.forEach((ring) => {
             ring.setOpacity(1);
@@ -123,10 +123,14 @@ export class App extends View {
             });
 
             setTimeout(function() {
+                ring.activateBlackhole();
+            }, this.time.step6);
+
+            setTimeout(function() {
                 ring.setDOMProperties({
                     'border-color': '#000000'
                 });
-            }, this.time.step7);
+            }, this.time.end);
         });
 
         setTimeout(function() {
@@ -136,7 +140,7 @@ export class App extends View {
 
         setTimeout(function() {
             _this.phyAdd3dGravity();
-        }, this.time.step7);
+        }, this.time.step6);
     }
 
     render() {
