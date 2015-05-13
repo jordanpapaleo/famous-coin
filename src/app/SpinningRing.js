@@ -7,13 +7,8 @@ const Curves            = FamousPlatform.transitions.Curves;
 const Famous            = FamousPlatform.core.Famous;
 
 //Physics Components
-const Box               = FamousPlatform.physics.Box;
-const Quaternion        = FamousPlatform.math.Quaternion;
 const RotationalDrag    = FamousPlatform.physics.RotationalDrag;
-const RotationalSpring  = FamousPlatform.physics.RotationalSpring;
 const Sphere            = FamousPlatform.physics.Sphere;
-const Spring            = FamousPlatform.physics.Spring;
-const Vec3              = FamousPlatform.math.Vec3;
 
 export class SpinningRing extends View {
     constructor(node, options) {
@@ -23,7 +18,7 @@ export class SpinningRing extends View {
 
         //Position
         this.setAlign(.5, 0);
-        this.setMountPoint(.5, .5);
+        this.setMountPoint(.5, .5, .5);
         this.setOrigin(.5, .5, .5);
         this.setPositionY(ENUMS.COIN_CENTER);
 
@@ -36,7 +31,7 @@ export class SpinningRing extends View {
             this.model.sizeY = 78;
         }
 
-        this.setSizeMode(1, 1);
+        this.setSizeModeAbsolute();
         this.setAbsoluteSize(this.model.sizeX, this.model.sizeY);
 
         //Display
@@ -69,9 +64,6 @@ export class SpinningRing extends View {
 
     spinRing() {
         //TODO Allow rotational args to be passed
-        /*if(arguments) {
-            this.sphere.setAngularVelocity(...arguments);
-        } else*/
         if(this.model.i === 0) {
             this.sphere.setAngularVelocity(5, 15, 10);
         } else if(this.model.i === 1) {

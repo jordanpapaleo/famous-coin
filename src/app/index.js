@@ -65,7 +65,7 @@ export class App extends View {
         this.ringBodies = [];
 
         for(let i = 0; i < this.rings.length; i++) {
-            this.ringBodies.push(this.rings[i].box);
+            this.ringBodies.push(this.rings[i].sphere);
         }
 
         this.drag = new Drag(this.ringBodies, {
@@ -115,7 +115,7 @@ export class App extends View {
         this.rings.forEach((ring) => {
             ring.setOpacity(1);
 
-            ring.box.setVelocity(Math.random() * (dampenedVelocity * 2) - dampenedVelocity, Math.random() * (dampenedVelocity * 2) - dampenedVelocity, 0);
+            ring.sphere.setVelocity(Math.random() * (dampenedVelocity * 2) - dampenedVelocity, Math.random() * (dampenedVelocity * 2) - dampenedVelocity, 0);
             ring.activatePhysics();
 
             ring.setScale(1.1, 1.1, 1.1, {
