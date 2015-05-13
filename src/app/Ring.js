@@ -162,35 +162,40 @@ export class Ring extends View {
         this.sphere = new Sphere({
             mass: 10,
             radius: this.model.size * .5
-        })
+        });
+
+        window.sphere = this.sphere;
     }
 
     _update() {
         if(this.isPhysicsActive) {
-            let physicsTransform = this.world.getTransform(this.sphere);
-            var dx = physicsTransform.position[0] - 0;
-            var dy = physicsTransform.position[1] - 500;
+            let p = this.sphere.getPosition();
+            let v = this.sphere.getVelocity();
+            let dx = p.x - 0;
+            let dy = p.y - 500;
 
             let distanceFromCenter = Math.sqrt(dx * dx + dy * dy) - this.model.size / 2;
             let blackholeRadius = 30;
 
             if(this.isBlackholeActive && distanceFromCenter < blackholeRadius) {
                 this.emit('spinRing', {});
-
                 this.isPhysicsActive = false;
+
                 this.sphere.setVelocity(0, 0, 0);
                 this.setPosition(0, ENUMS.COIN_CENTER, 0, { duration: 250 }, () => {
                     this.setScale(0.1, 0.1, 0.1, { duration: 100 }, () => {
                         this.recycle();
                     });
                 });
-            } else if(physicsTransform.position[1] > window.innerHeight + 100) {
+            } else if(p.y > window.innerHeight + 100) {
                 this.recycle();
+            } else if(p.y > ENUMS.COIN_CENTER + 30 && v.y < 15 && v.x < 15) { // Prevents the hanging bubbles
+                this.pop();
             } else {
-                this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[2]);
+                this.setPosition(p.x, p.y, p.z);
 
+                //Breathing
                 if(this.isBreathing) {
-                    //Breathing
                     if(this.scaling.state === 0) {
                         this.scaling.val += this.scaling.rate; //scale in
                     } else {
@@ -214,10 +219,11 @@ export class Ring extends View {
         let windowHalf = window.innerWidth / 2;
         let xPos = Math.random() * (windowHalf * 2) - windowHalf;
         let yPos = Math.random() * -700 - 200;
+
         this.sphere.setPosition(xPos, yPos, 0);
+        this.sphere.setVelocity(0, 0, 0);
         this.scale.set(1, 1, 1, {duration : 10});
         this.setOpacity(1);
-        this.sphere.setVelocity(0, 0, 0);
         this.isPhysicsActive = true;
         this.isBreathing = true;
         this.setDOMProperties({

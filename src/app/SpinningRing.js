@@ -101,7 +101,7 @@ export class SpinningRing extends View {
 
     _update() {
         let v = this.sphere.getAngularVelocity();
-        let q = this.sphere.getOrientation();
+        let q = this.sphere.getOrientation(); //Returns a quaternion
 
         if(v.x < 1 && v.y < 1 && v.z < 1) {
             this.setRotation(0, 0, 0, {
