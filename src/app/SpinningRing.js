@@ -1,55 +1,72 @@
-import View     from 'famous-creative/display/View';
-import Physics  from './PhysicsService';
+import Physics          from './PhysicsService';
+import View             from 'famous-creative/display/View';
 
-const Curves  = FamousPlatform.transitions.Curves;
-const Famous  = FamousPlatform.core.Famous;
-const Quaternion = FamousPlatform.math.Quaternion;
+//Famous Components
+const Famous            = FamousPlatform.core.Famous;
 
 //Physics Components
-const Sphere            = FamousPlatform.physics.Sphere;
-const Spring            = FamousPlatform.physics.Spring;
-const Box               = FamousPlatform.physics.Box;
-const RotationalSpring  = FamousPlatform.physics.RotationalSpring;
 const RotationalDrag    = FamousPlatform.physics.RotationalDrag;
-const Vec3              = FamousPlatform.math.Vec3;
+const Sphere            = FamousPlatform.physics.Sphere;
 
 export class SpinningRing extends View {
     constructor(node, options) {
         super(node, options);
 
-        this.model = {};
-        this.model.i = options.i;
+        this.model = options || {};
 
+        //Position
+        this.setAlign(.5, 0);
+        this.setMountPoint(.5, .5, .5);
+        this.setOrigin(.5, .5, .5);
+        this.setPositionY(window.innerHeight * 1.1);
+
+        //Sizing
+        if(this.model.i === 0) {            //Outer ring
+            this.model.sizeX = 90;
+            this.model.sizeY = 90;
+        } else if(this.model.i === 1) {     //Inner ring
+            this.model.sizeX = 78;
+            this.model.sizeY = 78;
+        }
+
+        this.setSizeModeAbsolute();
+        this.setAbsoluteSize(this.model.sizeX, this.model.sizeY);
+
+        //Display
+        this.setOpacity(0);
         this.createDOMElement({
             tagName: 'img',
             attributes: {
-                'src': options.svgPath
-            }
+                'src': this.model.svgPath
+            },
+            classes: ['spinning-ring']
         });
 
-        if(options.i === 0) {
-            //Outer ring
-            this.model.sizeX = 90;
-            this.model.sizeY = 90;
-            this.model.posY  = window.innerHeight * 1.1;
-        } else if(options.i === 1) {
-            //Inner ring
-            this.model.sizeX = 78;
-            this.model.sizeY = 78;
-            this.model.posY  = window.innerHeight * 1.1;
-        }
-
-        this.setSizeMode(1, 1);
-        this.setAbsoluteSize(this.model.sizeX, this.model.sizeY);
-
-        this.setPositionY(this.model.posY);
-
-        this.setMountPoint(.5, 0);
-        this.setAlign(.5, 0);
-        this.setOrigin(.5, .5);
-        this.isActiveRotation = false;
-        this._initPhysics();
+        //Eventing
         this.setEvents();
+        this._initPhysics();
+    }
+
+    setEvents() {
+        this.on('spinRing', () => {
+            let opacity = this.getOpacity();
+            if(opacity !== 1) {
+                this.setOpacity(1, {
+                    duration: 200
+                });
+            }
+
+            this.spinRing();
+        });
+    }
+
+    spinRing() {
+        //TODO Allow rotational args to be passed
+        if(this.model.i === 0) {
+            this.sphere.setAngularVelocity(5, 15, 10);
+        } else if(this.model.i === 1) {
+            this.sphere.setAngularVelocity(25, 10, 15);
+        }
     }
 
     _initPhysics() {
@@ -68,47 +85,30 @@ export class SpinningRing extends View {
 
         this.sphere = new Sphere({
             mass: 100,
-            size: [this.model.sizeX, this.model.sizeY, 0]
+            radius: this.model.sizeX * .5
         });
-
-        window.sphere = this.sphere;
 
         //A behavior that slows angular velocity by applying torque.
         this.rotationalDrag = new RotationalDrag([this.sphere], {
-            max: 50,
-            strength: 50
+            max: 50000,
+            strength: 500000
         });
 
         this.world.add([this.sphere, this.rotationalDrag]);
     }
 
     _update() {
-        let velocity = this.sphere.getAngularVelocity();
+        let v = this.sphere.getAngularVelocity();
+        let q = this.sphere.getOrientation(); //Returns a quaternion
 
-        if(velocity.x < 1 && velocity.y < 1 && velocity.z < 1) {
+        if(v.x < 1 && v.y < 1 && v.z < 1) {
             this.setRotation(0, 0, 0, {
                 duration: 2000
             });
-            this.isRotationActive = false;
-        }
-
-        if(this.isRotationActive) {
-            let physicsTransform = this.world.getTransform(this.sphere);
-            let quaternion = new Quaternion(physicsTransform.rotation[3], physicsTransform.rotation[0], physicsTransform.rotation[1], physicsTransform.rotation[2]);
+        } else {
             let rotation = {};
-            quaternion.toEuler(rotation);
+            q.toEuler(rotation);
             this.setRotation(rotation.x, rotation.y, rotation.z);
         }
-    }
-
-    setEvents() {
-        this.on('spinRing', () => {
-            this.isRotationActive = true;
-            if(this.model.i === 0) {
-                this.sphere.setAngularVelocity(5, 15, 10);
-            } else if(this.model.i === 1) {
-                this.sphere.setAngularVelocity(25, 10, 15);
-            }
-        });
     }
 }

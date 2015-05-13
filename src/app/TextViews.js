@@ -1,4 +1,4 @@
-import View from 'famous-creative/display/View';
+import View             from 'famous-creative/display/View';
 
 export class TopText extends View {
     constructor(node, options) {
@@ -9,10 +9,9 @@ export class TopText extends View {
                 'font-size': '60px',
                 'text-align': 'center',
                 'font-weight': '200'
-            }
+            },
+            content: 'Try<br>simple'
         });
-
-        this.setDOMContent('Try<br>simple');
 
         this.setSizeMode(0, 1);
         this.setProportionalSize(1, null);
@@ -111,7 +110,7 @@ export class PreOrder extends View {
         this.setAlign(.5, 0);
         this.setMountPoint(.5, 0);
         this.setOpacity(1);
-        this.setSizeMode(1, 1);
+        this.setSizeModeAbsolute();
         this.setAbsoluteSize(220, 40);
         this.setPositionY(window.innerHeight * 1.5);
     }

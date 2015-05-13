@@ -4,22 +4,48 @@ import {Hand}           from './Hand';
 import {Card}           from './Card';
 import {Ring}           from './Ring';
 import {SpinningRing}   from './SpinningRing';
+import ENUMS            from './Enums';
+import Physics          from './PhysicsService';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
-import Physics  from './PhysicsService';
 
+//Famous Components
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
-const Color          = FamousPlatform.utilities.Color;
 
+//Physics Components
 const Gravity1D      = FamousPlatform.physics.Gravity1D;
 const Gravity3D      = FamousPlatform.physics.Gravity3D;
 const Vec3           = FamousPlatform.math.Vec3;
-const Box            = FamousPlatform.physics.Box;
 const Drag           = FamousPlatform.physics.Drag;
 
 export class App extends View {
     constructor(node, options) {
         super(node, options);
+
+        this.setAlign(.5, .5);
+        this.setMountPoint(.5, .5);
+
+        this.setSizeMode(0, 0);
+        this.setAbsoluteSize(1, 1);
+
+        this.createDOMElement({
+            properties: {
+                'overflow': 'hidden'
+            }
+        });
+
+        this.initTimeline();
+
+        this.render();
+        this.renderSpinningRings();
+        this.renderRings();
+
+        this.setEvents();
+        this.registerTimelinePaths();
+        this.initWorld();
+    }
+
+    initTimeline() {
         this.timeline = new Timeline({ timescale: 1 });
         this.time = {};
         this.time.start = 0;
@@ -32,40 +58,19 @@ export class App extends View {
         this.time.step7 = this.time.step6 + 250;  // End state text starts moving in
         this.time.step8 = this.time.step7 + 1000; // Stage two done: Tag line and coin card are moving up and out
         this.time.end   = this.time.step8 + 1000; // Finis
-
-        this.setSizeMode(0, 0);
-        this.setAbsoluteSize(1, 1);
-        this.setMountPoint(.5, .5);
-        this.setAlign(.5, .5);
-
-        this.createDOMElement({
-            properties: {
-                'overflow': 'hidden'
-            }
-        });
-
-        this.render();
-        this.renderSpinningRings();
-        this.renderRings();
-
-        this.setEvents();
-        this.registerTimelinePaths();
-
-        this.initWorld();
     }
-
 
     initWorld() {
         this.world = Physics.getSimulation();
         this.ringBodies = [];
 
         for(let i = 0; i < this.rings.length; i++) {
-            this.ringBodies.push(this.rings[i].box);
+            this.ringBodies.push(this.rings[i].sphere);
         }
 
         this.drag = new Drag(this.ringBodies, {
-            max: 7500,
-            strength: 7500,
+            max: Physics.dampenForce(7500),
+            strength: Physics.dampenForce(7500),
             type: Drag.Linear
         });
 
@@ -73,11 +78,10 @@ export class App extends View {
     }
 
     phyAddRepulsion() {
-        console.log('repuslion');
         let ringRepulsions = [];
         for(let i = 0; i < this.ringBodies.length; i++) {
             ringRepulsions.push(new Gravity3D(this.ringBodies[i], this.ringBodies, {
-                strength : -1e3 //Negative Repulsion pushes away
+                strength: Physics.dampenForce(-1e3) //Negative Repulsion pushes away
             }));
         }
 
@@ -85,20 +89,17 @@ export class App extends View {
     }
 
     phyAdd1dGravity() {
-        //Downward gravity
         this.gravity1d = new Gravity1D(this.ringBodies, {
-            acceleration: new Vec3(0, 800, 0)
+            acceleration: new Vec3(0, Physics.dampenForce(750), 0)
         });
 
-
-        window.gravity1d = this.gravity1d;
         this.world.add([this.gravity1d]);
     }
 
     phyAdd3dGravity() {
         this.gravity3d = new Gravity3D(null, this.ringBodies, {
-            strength : 1e7,
-            anchor: new Vec3(0, window.innerHeight - 265, 0)
+            strength: Physics.dampenForce(5e7),
+            anchor: new Vec3(0, ENUMS.COIN_POS, 0)
         });
 
         this.world.add([this.gravity3d]);
@@ -111,7 +112,10 @@ export class App extends View {
         this.rings.forEach((ring) => {
             ring.setOpacity(1);
 
-            ring.box.setVelocity(Math.random() * (dampenedVelocity * 2) - dampenedVelocity, Math.random() * (dampenedVelocity * 2) - dampenedVelocity, 0);
+            let vx = Math.random() * (dampenedVelocity * 2) - dampenedVelocity;
+            let vy = Math.random() * (dampenedVelocity * 2) - dampenedVelocity;
+
+            ring.sphere.setVelocity(vx, vy, 0);
             ring.activatePhysics();
 
             ring.setScale(1.1, 1.1, 1.1, {
@@ -265,22 +269,20 @@ export class App extends View {
         this.rings = [];
 
         let ringCount = 0;
-        let windowWidth =  window.innerWidth;
 
-        if(windowWidth < 320) {
-            ringCount = 5;
-        } else if(windowWidth < 428) {
+        if(window.innerWidth < 320) {
+            ringCount = 7;
+        } else if(window.innerWidth < 428) {
             ringCount = 10;
-        } else if(windowWidth < 768) {
+        } else if(window.innerWidth < 768) {
             ringCount = 15;
-        } else if(windowWidth < 992) {
+        } else if(window.innerWidth < 992) {
             ringCount = 20;
         } else {
-            ringCount = 25;
+            ringCount = 30;
         }
 
-        //ringCount = 10;
-
+        //ringCount = 1;
         for(let i = 0; i < ringCount; i++) {
             let ring = new Ring(this.node.addChild());
             this.rings.push(ring);
@@ -302,6 +304,13 @@ export class App extends View {
     setEvents() {
         let isScrubbing = false;
         let hasFinished = false;
+
+        setInterval(() => {
+            if(this.rings && this.rings.length > 0) {
+                let ring = this.rings[Math.floor(Math.random() * this.rings.length)];
+                ring.pop();
+            }
+        }, 500);
 
         this.on('mousedown', (e) => {
             if(!hasFinished) {
@@ -567,12 +576,7 @@ export class App extends View {
         /*--------------------- SPINNING RINGS ---------------------*/
         for(let i = 0, j = this.spinningRings.length; i < j; i++) {
             let coin = this.spinningRings[i];
-
             let startingYPos = coin.getPositionY();
-            let endingYPos = window.innerHeight - 265;
-            if(i === 1) {
-                endingYPos = endingYPos + 6;
-            }
 
             this.timeline.registerPath({
                 handler: function(val) {
@@ -581,7 +585,7 @@ export class App extends View {
                 path: [
                     [this.time.start, [0, startingYPos]],
                     [this.time.step7, [0, startingYPos]],
-                    [this.time.step8, [0, endingYPos], Curves.easeOut]
+                    [this.time.step8, [0, ENUMS.COIN_CENTER], Curves.easeOut]
                 ]
             });
 
