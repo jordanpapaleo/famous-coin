@@ -1,4 +1,6 @@
-import View from 'famous-creative/display/View';
+import View             from 'famous-creative/display/View';
+import ENUMS            from './Enums';
+
 const Curves = FamousPlatform.transitions.Curves;
 
 export class Card extends View {

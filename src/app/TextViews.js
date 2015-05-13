@@ -1,4 +1,6 @@
-import View from 'famous-creative/display/View';
+import View             from 'famous-creative/display/View';
+import ENUMS            from './Enums';
+
 
 export class TopText extends View {
     constructor(node, options) {

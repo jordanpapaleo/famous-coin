@@ -1,5 +1,7 @@
 import View     from 'famous-creative/display/View';
 import Physics  from './PhysicsService';
+import ENUMS    from './Enums';
+
 
 const Famous           = FamousPlatform.core.Famous;
 const GestureHandler   = FamousPlatform.components.GestureHandler;
@@ -11,27 +13,27 @@ const Vec3             = FamousPlatform.math.Vec3;
 
 export class Ring extends View {
     constructor(node, options) {
-        super(node);
+        super(node, options);
 
-        this.isBlackholeActive = false;
+        this.model = options || {};
+        this.model.ringSize  = this._getRingSize();
+        this.model.ringColor = this._getRingColors();
+        this.model.size      = this.model.ringSize * 35;
 
-        this.model = {
-            ringSize: this._getRingSize(),
-            ringColor: this._getRingColors()
-        };
-
-        this.model.size = this.model.ringSize * 35;
-
+        //Position
         this.setAlign(.5, 0);
-        this.setMountPoint(.5, 0);
-        this.setOrigin(.5, .5);
+        this.setMountPoint(.5, .5);
+        this.setOrigin(.5, .5, .5);
         this.setPositionY(200);
         this.setPositionZ(-500);
-        this.setOpacity(0);
-        this.setScale(.25, .25);
+
+        // Sizing
         this.setSizeModeAbsolute();
         this.setAbsoluteSize(this.model.size, this.model.size);
 
+        //Display
+        this.setOpacity(0);
+        this.setScale(.25, .25);
         this.createDOMElement({
             properties: {
                 width: '100%',
@@ -43,20 +45,8 @@ export class Ring extends View {
             classes: ['ring']
         });
 
-        this._setRingPosition();
-        this._initPhysics();
         this.setEvents();
-    }
-
-    _setRingPosition() {
-        const xMax = window.innerWidth / 4;
-        const yMax = window.innerHeight / 4;
-        this.model.positionX = Math.random() * (xMax * 2) - xMax;
-        this.model.positionY = Math.random() * (yMax * 2) - yMax;
-
-        if(this.model.positionY < 0) {
-            this.model.positionY += 175;
-        }
+        this._initPhysics();
     }
 
     _getRingColors() {
@@ -116,6 +106,15 @@ export class Ring extends View {
     _initPhysics() {
         this.world = Physics.getSimulation();
         this.isPhysicsActive = false;
+        this.isBreathing = true;
+        this.scaling = {
+            state: (Math.random() > 0.5) ? 0 : 1,
+            val: 1,
+            max: .1,
+            rate: Math.random() * .005
+        };
+
+        this.isBlackholeActive = false;
 
         var updater = {
             onUpdate: (t) => {
@@ -149,17 +148,36 @@ export class Ring extends View {
 
             if(this.isBlackholeActive && distanceFromCenter < blackholeRadius) {
                 this.emit('spinRing', {});
+
                 this.isPhysicsActive = false;
                 this.box.setVelocity(0, 0, 0);
-                this.setScale(0.1, 0.1, 0.1, {duration : 100}, () => {
-                    this.recycle();
+                this.setPosition(0, ENUMS.COIN_CENTER, 0, { duration : 250 }, () => {
+                    this.setScale(0.1, 0.1, 0.1, { duration : 100 }, () => {
+                        this.recycle();
+                    });
                 });
-            }
-
-            if(physicsTransform.position[1] > window.innerHeight + 100) {
-               this.recycle();
+            } else if(physicsTransform.position[1] > window.innerHeight + 100) {
+                this.recycle();
             } else {
                 this.setPosition(physicsTransform.position[0], physicsTransform.position[1], physicsTransform.position[2]);
+
+                if(this.isBreathing) {
+                    //Breathing
+                    if(this.scaling.state === 0) {
+                        this.scaling.val += this.scaling.rate; //scale in
+                    } else {
+                        this.scaling.val -= this.scaling.rate; //scale out
+                    }
+
+                    if(this.scaling.val >= 1 + this.scaling.max) {
+                        this.scaling.state = 1;
+                    } else if(this.scaling.val <= 1 - this.scaling.max) {
+                        this.scaling.state = 0;
+                    }
+
+                    this.haltScale();
+                    this.setScale(this.scaling.val, this.scaling.val, this.scaling.val, { duration: 10});
+                }
             }
         }
     }
@@ -174,16 +192,19 @@ export class Ring extends View {
 
     pop() {
         let duration = 100;
+        this.isBreathing = false;
+        this.haltOpacity();
+        this.haltScale();
 
         this.setOpacity(0, {
-            duration: 50
+            duration: duration * 2
         });
 
         this.setScale(1.2, 1.2, 1.2, {
-            duration: duration / 2
+            duration: duration
         }, () => {
             this.setScale(0, 0, 0, {
-                duration: duration / 2
+                duration: duration
             }, () => {
                 this.isPhysicsActive = false;
                 this.recycle();
@@ -200,6 +221,7 @@ export class Ring extends View {
         this.setOpacity(1);
         this.box.setVelocity(0, 0, 0);
         this.isPhysicsActive = true;
+        this.isBreathing = true;
         this.setDOMProperties({
             'border-color': '#000000'
         });
