@@ -10,7 +10,7 @@ Physics.getSimulation = function() {
     return this._simulation;
 };
 
-Physics.magnifyForce = function() {
+Physics.magnifyForce = function(v) {
     let width =  window.innerWidth;
     let height = window.innerHeight;
     let ratio = 1;

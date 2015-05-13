@@ -69,8 +69,8 @@ export class App extends View {
         }
 
         this.drag = new Drag(this.ringBodies, {
-            max: 7500,
-            strength: 7500,
+            max: Physics.dampenForce(7500),
+            strength: Physics.dampenForce(7500),
             type: Drag.Linear
         });
 
@@ -81,7 +81,7 @@ export class App extends View {
         let ringRepulsions = [];
         for(let i = 0; i < this.ringBodies.length; i++) {
             ringRepulsions.push(new Gravity3D(this.ringBodies[i], this.ringBodies, {
-                strength : -1e3 //Negative Repulsion pushes away
+                strength : Physics.dampenForce(-1e3) //Negative Repulsion pushes away
             }));
         }
 
@@ -91,17 +91,15 @@ export class App extends View {
     phyAdd1dGravity() {
         //Downward gravity
         this.gravity1d = new Gravity1D(this.ringBodies, {
-            acceleration: new Vec3(0, 825, 0)
+            acceleration: new Vec3(0, Physics.dampenForce(750), 0)
         });
 
-
-        window.gravity1d = this.gravity1d;
         this.world.add([this.gravity1d]);
     }
 
     phyAdd3dGravity() {
         this.gravity3d = new Gravity3D(null, this.ringBodies, {
-            strength : 5e7,
+            strength : Physics.dampenForce(5e7),
             anchor: new Vec3(0, ENUMS.COIN_POS, 0)
         });
 
@@ -576,25 +574,19 @@ export class App extends View {
         });
 
         /*--------------------- SPINNING RINGS ---------------------*/
-        /*for(let i = 0, j = this.spinningRings.length; i < j; i++) {
+        console.log('spinningRings',this.spinningRings);
+        for(let i = 0, j = this.spinningRings.length; i < j; i++) {
             let coin = this.spinningRings[i];
-
             let startingYPos = coin.getPositionY();
-            let endingYPos = ENUMS.COIN_POS;
-
-            if(i === 1) {
-                endingYPos = endingYPos + 6;
-            }
 
             this.timeline.registerPath({
                 handler: function(val) {
-                    console.log('val', val);
                     coin.setPosition(...val);
                 },
                 path: [
                     [this.time.start, [0, startingYPos]],
                     [this.time.step7, [0, startingYPos]],
-                    [this.time.step8, [0, endingYPos], Curves.easeOut]
+                    [this.time.step8, [0, ENUMS.COIN_CENTER], Curves.easeOut]
                 ]
             });
 
@@ -614,7 +606,7 @@ export class App extends View {
                     [this.time.end, this.time.end]
                 ]
             });
-        }*/
+        }
 
         /*--------------------- COIN TEXT ---------------------*/
         this.timeline.registerPath({

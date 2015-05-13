@@ -20,7 +20,7 @@ export class SpinningRing extends View {
         this.setAlign(.5, 0);
         this.setMountPoint(.5, .5, .5);
         this.setOrigin(.5, .5, .5);
-        this.setPositionY(ENUMS.COIN_CENTER);
+        this.setPositionY(window.innerHeight * 1.1);
 
         //Sizing
         if(this.model.i === 0) {            //Outer ring

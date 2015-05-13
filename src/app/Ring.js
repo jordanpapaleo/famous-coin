@@ -114,7 +114,7 @@ export class Ring extends View {
     }
 
     pop() {
-        let duration = 100;
+        let duration = 75;
         this.isBreathing = false;
         this.haltOpacity();
         this.haltScale();
@@ -127,10 +127,10 @@ export class Ring extends View {
             duration: duration
         }, () => {
             this.setScale(0, 0, 0, {
-                duration: duration
+                duration: duration / 2
             }, () => {
                 this.isPhysicsActive = false;
-                this.recycle();
+                this._recycle();
             });
         });
     }
@@ -163,8 +163,6 @@ export class Ring extends View {
             mass: 10,
             radius: this.model.size * .5
         });
-
-        window.sphere = this.sphere;
     }
 
     _update() {
@@ -184,11 +182,11 @@ export class Ring extends View {
                 this.sphere.setVelocity(0, 0, 0);
                 this.setPosition(0, ENUMS.COIN_CENTER, 0, { duration: 250 }, () => {
                     this.setScale(0.1, 0.1, 0.1, { duration: 100 }, () => {
-                        this.recycle();
+                        this._recycle();
                     });
                 });
             } else if(p.y > window.innerHeight + 100) {
-                this.recycle();
+                this._recycle();
             } else if(p.y > ENUMS.COIN_CENTER + 30 && v.y < 15 && v.x < 15) { // Prevents the hanging bubbles
                 this.pop();
             } else {
@@ -215,7 +213,7 @@ export class Ring extends View {
         }
     }
 
-    recycle() {
+    _recycle() {
         let windowHalf = window.innerWidth / 2;
         let xPos = Math.random() * (windowHalf * 2) - windowHalf;
         let yPos = Math.random() * -700 - 200;
