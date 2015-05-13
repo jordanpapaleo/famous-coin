@@ -1,6 +1,4 @@
-const Famous           = FamousPlatform.core.Famous;
 const PhysicsEngine    = FamousPlatform.physics.PhysicsEngine;
-const Collision        = FamousPlatform.physics.Collision;
 
 let Physics = {
     _simulation: new PhysicsEngine()
@@ -12,7 +10,6 @@ Physics.getSimulation = function() {
 
 Physics.magnifyForce = function(v) {
     let width =  window.innerWidth;
-    let height = window.innerHeight;
     let ratio = 1;
 
     if(width < 320) {
@@ -30,7 +27,6 @@ Physics.magnifyForce = function(v) {
 
 Physics.dampenForce = function(v) {
     let width =  window.innerWidth;
-    let height = window.innerHeight;
     let ratio = 1;
 
     if(width < 320) {

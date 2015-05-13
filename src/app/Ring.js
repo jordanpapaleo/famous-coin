@@ -7,10 +7,8 @@ const Famous            = FamousPlatform.core.Famous;
 const GestureHandler    = FamousPlatform.components.GestureHandler;
 
 //Physics Components
-const Box               = FamousPlatform.physics.Box;
-const Spring            = FamousPlatform.physics.Spring;
-const Vec3              = FamousPlatform.math.Vec3;
 const Sphere            = FamousPlatform.physics.Sphere;
+const Vec3              = FamousPlatform.math.Vec3;
 
 export class Ring extends View {
     constructor(node, options) {
@@ -161,7 +159,8 @@ export class Ring extends View {
 
         this.sphere = new Sphere({
             mass: 10,
-            radius: this.model.size * .5
+            radius: this.model.size * .5,
+            position: new Vec3(0, 200, 0)
         });
     }
 
@@ -220,7 +219,7 @@ export class Ring extends View {
 
         this.sphere.setPosition(xPos, yPos, 0);
         this.sphere.setVelocity(0, 0, 0);
-        this.scale.set(1, 1, 1, {duration : 10});
+        this.scale.set(1, 1, 1, {duration: 10});
         this.setOpacity(1);
         this.isPhysicsActive = true;
         this.isBreathing = true;

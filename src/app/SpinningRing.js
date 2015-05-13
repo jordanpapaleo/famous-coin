@@ -1,9 +1,7 @@
-import ENUMS            from './Enums';
 import Physics          from './PhysicsService';
 import View             from 'famous-creative/display/View';
 
 //Famous Components
-const Curves            = FamousPlatform.transitions.Curves;
 const Famous            = FamousPlatform.core.Famous;
 
 //Physics Components

@@ -8,14 +8,14 @@ import ENUMS            from './Enums';
 import Physics          from './PhysicsService';
 import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
+//Famous Components
 const GestureHandler = FamousPlatform.components.GestureHandler;
 const Curves         = FamousPlatform.transitions.Curves;
-const Color          = FamousPlatform.utilities.Color;
 
+//Physics Components
 const Gravity1D      = FamousPlatform.physics.Gravity1D;
 const Gravity3D      = FamousPlatform.physics.Gravity3D;
 const Vec3           = FamousPlatform.math.Vec3;
-const Box            = FamousPlatform.physics.Box;
 const Drag           = FamousPlatform.physics.Drag;
 
 export class App extends View {
@@ -81,7 +81,7 @@ export class App extends View {
         let ringRepulsions = [];
         for(let i = 0; i < this.ringBodies.length; i++) {
             ringRepulsions.push(new Gravity3D(this.ringBodies[i], this.ringBodies, {
-                strength : Physics.dampenForce(-1e3) //Negative Repulsion pushes away
+                strength: Physics.dampenForce(-1e3) //Negative Repulsion pushes away
             }));
         }
 
@@ -89,7 +89,6 @@ export class App extends View {
     }
 
     phyAdd1dGravity() {
-        //Downward gravity
         this.gravity1d = new Gravity1D(this.ringBodies, {
             acceleration: new Vec3(0, Physics.dampenForce(750), 0)
         });
@@ -99,7 +98,7 @@ export class App extends View {
 
     phyAdd3dGravity() {
         this.gravity3d = new Gravity3D(null, this.ringBodies, {
-            strength : Physics.dampenForce(5e7),
+            strength: Physics.dampenForce(5e7),
             anchor: new Vec3(0, ENUMS.COIN_POS, 0)
         });
 
@@ -113,7 +112,10 @@ export class App extends View {
         this.rings.forEach((ring) => {
             ring.setOpacity(1);
 
-            ring.sphere.setVelocity(Math.random() * (dampenedVelocity * 2) - dampenedVelocity, Math.random() * (dampenedVelocity * 2) - dampenedVelocity, 0);
+            let vx = Math.random() * (dampenedVelocity * 2) - dampenedVelocity;
+            let vy = Math.random() * (dampenedVelocity * 2) - dampenedVelocity;
+
+            ring.sphere.setVelocity(vx, vy, 0);
             ring.activatePhysics();
 
             ring.setScale(1.1, 1.1, 1.1, {
@@ -135,13 +137,11 @@ export class App extends View {
             }, this.time.end);
         });
 
-        //TODO turn on
         setTimeout(function() {
             _this.phyAdd1dGravity();
             _this.phyAddRepulsion();
         }, 850);
 
-        //TODO turn on
         setTimeout(function() {
             _this.phyAdd3dGravity();
         }, this.time.step6);
@@ -271,7 +271,7 @@ export class App extends View {
         let ringCount = 0;
 
         if(window.innerWidth < 320) {
-            ringCount = 5;
+            ringCount = 7;
         } else if(window.innerWidth < 428) {
             ringCount = 10;
         } else if(window.innerWidth < 768) {
@@ -279,7 +279,7 @@ export class App extends View {
         } else if(window.innerWidth < 992) {
             ringCount = 20;
         } else {
-            ringCount = 25;
+            ringCount = 30;
         }
 
         //ringCount = 1;
@@ -574,7 +574,6 @@ export class App extends View {
         });
 
         /*--------------------- SPINNING RINGS ---------------------*/
-        console.log('spinningRings',this.spinningRings);
         for(let i = 0, j = this.spinningRings.length; i < j; i++) {
             let coin = this.spinningRings[i];
             let startingYPos = coin.getPositionY();
