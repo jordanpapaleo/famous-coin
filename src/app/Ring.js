@@ -5,6 +5,7 @@ import View            from 'famous-creative/display/View';
 //Famous Components
 const Famous            = FamousPlatform.core.Famous;
 const GestureHandler    = FamousPlatform.components.GestureHandler;
+const Curves            = FamousPlatform.transitions.Curves;
 
 //Physics Components
 const Sphere            = FamousPlatform.physics.Sphere;
@@ -173,20 +174,30 @@ export class Ring extends View {
 
             let distanceFromCenter = Math.sqrt(dx * dx + dy * dy) - this.model.size / 2;
             let blackholeRadius = 30;
+            let maxV = 1500;
 
             if(this.isBlackholeActive && distanceFromCenter < blackholeRadius) {
                 this.emit('spinRing', {});
                 this.isPhysicsActive = false;
 
                 this.sphere.setVelocity(0, 0, 0);
-                this.setPosition(0, ENUMS.COIN_CENTER, 0, { duration: 250 }, () => {
+                this.setPositionY(ENUMS.COIN_CENTER, {
+                    curve: Curves.easeOut,
+                    duration: 50
+                });
+                this.setPositionX(0, {
+                    curves: Curves.linear,
+                    duration: 250
+                }, () => {
                     this.setScale(0.1, 0.1, 0.1, { duration: 100 }, () => {
                         this._recycle();
                     });
                 });
             } else if(p.y > window.innerHeight + 100) {
                 this._recycle();
-            } else if(p.y > ENUMS.COIN_CENTER + 30 && v.y < 15 && v.x < 15) { // Prevents the hanging bubbles
+            } else if(p.y > ENUMS.COIN_CENTER + 70 && v.y < 15 && v.x < 15) { // Prevents the hanging bubbles
+                this.pop();
+            } else if(v.x > maxV || v.x < -maxV || v.y > maxV || v.y < -maxV) {
                 this.pop();
             } else {
                 this.setPosition(p.x, p.y, p.z);

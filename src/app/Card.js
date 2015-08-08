@@ -27,7 +27,7 @@ export class Card extends View {
             }
         });
 
-        // this.addCardBack();
+        // this.addCardBack(); Pulled per Sander
         this.addCardFront();
         this.loadCard();
     }
@@ -87,8 +87,8 @@ export class Card extends View {
                 break;
             case 1:
                 this.model.rotation.z = (.5 * Math.PI) / 180;
-                this.model.position.y = 312;
                 this.model.position.x = 20;
+                this.model.position.y = 312;
                 break;
             case 2:
                 this.model.rotation.z = (30 * Math.PI) / 180;
@@ -97,8 +97,8 @@ export class Card extends View {
                 break;
             case 3:
                 this.model.rotation.z = (-23 * Math.PI) / 180;
-                this.model.position.y = 245;
                 this.model.position.x = -30;
+                this.model.position.y = 245;
                 break;
             default:
                 break;

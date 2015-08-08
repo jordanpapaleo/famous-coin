@@ -18,8 +18,6 @@ Physics.magnifyForce = function(v) {
         ratio = 1.5;
     } else if(width < 768) {
         ratio = 1.15;
-    } else {
-        ratio = 1;
     }
 
     return ratio * v;
@@ -35,8 +33,6 @@ Physics.dampenForce = function(v) {
         ratio = .6;
     } else if(width < 768) {
         ratio = .85;
-    } else {
-        ratio = 1;
     }
 
     return ratio * v;

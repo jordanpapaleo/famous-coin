@@ -1,3 +1,4 @@
+import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 import View             from 'famous-creative/display/View';
 import Timeline         from 'famous-creative/animation/Timeline';
 import {Hand}           from './Hand';
@@ -6,7 +7,6 @@ import {Ring}           from './Ring';
 import {SpinningRing}   from './SpinningRing';
 import ENUMS            from './Enums';
 import Physics          from './PhysicsService';
-import {TopText, TagLine, GetYours, PreOrder, Coin} from './TextViews';
 
 //Famous Components
 const GestureHandler = FamousPlatform.components.GestureHandler;
@@ -282,7 +282,7 @@ export class App extends View {
             ringCount = 30;
         }
 
-        //ringCount = 1;
+        ringCount = 150;
         for(let i = 0; i < ringCount; i++) {
             let ring = new Ring(this.node.addChild());
             this.rings.push(ring);

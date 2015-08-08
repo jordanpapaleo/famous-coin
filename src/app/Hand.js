@@ -1,6 +1,6 @@
 import View             from 'famous-creative/display/View';
 
-const Curves = FamousPlatform.transitions.Curves;
+const Curves            = FamousPlatform.transitions.Curves;
 
 export class Hand extends View {
     constructor(node, options) {
